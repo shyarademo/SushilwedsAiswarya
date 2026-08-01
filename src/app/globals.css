@@ -995,15 +995,6 @@ body {
 }
 
 /* Sequential number: 01 / 02 / 03 */
-.ev-card__number {
-  font-family: var(--font-caps), serif;
-  font-size: 0.62rem;
-  letter-spacing: 5px;
-  text-indent: 5px;
-  color: var(--gold-dark);
-  margin-bottom: 10px;
-}
-
 /* Event name in Alex Brush script */
 .ev-card__name {
   font-family: var(--font-brush), cursive;

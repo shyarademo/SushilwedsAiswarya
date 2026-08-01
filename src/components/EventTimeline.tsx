@@ -76,10 +76,6 @@ export default function EventTimeline() {
 
             {/* Frosted glass panel */}
             <div className={`ev-scene__glass scroll-anim delay-${idx + 2}`}>
-              <p className="ev-card__number">
-                {String(idx + 1).padStart(2, "0")}
-              </p>
-
               <h3 className="ev-card__name">{ev.name}</h3>
 
               <p className="ev-card__datetime">
