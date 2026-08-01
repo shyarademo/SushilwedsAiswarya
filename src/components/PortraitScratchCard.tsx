@@ -39,7 +39,8 @@ export default function PortraitScratchCard() {
     canvas.width = Math.round(rect.width * dpr);
     canvas.height = Math.round(rect.height * dpr);
 
-    const ctx = canvas.getContext("2d");
+    // willReadFrequently: scratch progress is sampled via getImageData
+    const ctx = canvas.getContext("2d", { willReadFrequently: true });
     if (!ctx) return;
     ctxRef.current = ctx;
 
