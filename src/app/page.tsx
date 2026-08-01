@@ -5,6 +5,7 @@ import CountdownTimer from "@/components/CountdownTimer";
 import EventTimeline from "@/components/EventTimeline";
 import PortraitScratchCard from "@/components/PortraitScratchCard";
 import RsvpSection from "@/components/RsvpSection";
+import SideSelector from "@/components/SideSelector";
 
 export default function HomePage() {
   useEffect(() => {
@@ -123,7 +124,7 @@ export default function HomePage() {
 
           {/* Bride block */}
           <div className="welcome-person scroll-anim delay-4">
-            <h1 className="welcome-name">Aishwarya</h1>
+            <h1 className="welcome-name">Aiswarya</h1>
             <p className="welcome-parents">
               Daughter of Smt. Anitha M N &amp; Shri. Ajit P Vasu
             </p>
@@ -153,7 +154,7 @@ export default function HomePage() {
             <p className="portrait-caption">
               Sushil
               <span className="portrait-caption__amp">&amp;</span>
-              Aishwarya
+              Aiswarya
             </p>
           </div>
         </section>
@@ -167,6 +168,16 @@ export default function HomePage() {
 
         {/* ── Event Timeline ── */}
         <EventTimeline />
+
+        {/* ── Ornamental divider ── */}
+        <div className="section-ornament" aria-hidden="true">
+          <span className="section-ornament__line section-ornament__line--left"></span>
+          <span className="section-ornament__diamond"></span>
+          <span className="section-ornament__line section-ornament__line--right"></span>
+        </div>
+
+        {/* ── Bride side / Groom side ── */}
+        <SideSelector />
 
         {/* ── Ornamental divider ── */}
         <div className="section-ornament" aria-hidden="true">
@@ -189,7 +200,7 @@ export default function HomePage() {
           <div className="footer-compliments">
             <p className="footer-compliments__label">Best Compliments</p>
             <div className="footer-names-wrap">
-              <p className="footer-names">Soumil and Aravind</p>
+              <p className="footer-names">Soumil and Arvind</p>
             </div>
           </div>
 

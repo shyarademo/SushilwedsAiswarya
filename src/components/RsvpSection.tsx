@@ -2,15 +2,23 @@
 
 import { useState } from "react";
 
+type YesNo = "yes" | "no" | null;
+
 export default function RsvpSection() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [attendance, setAttendance] = useState<"yes" | "no" | null>(null);
+  const [attendance, setAttendance] = useState<YesNo>(null);
+  const [attendWedding, setAttendWedding] = useState<YesNo>(null);
+  const [attendReception, setAttendReception] = useState<YesNo>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!attendance) {
       alert("Please let us know if you will be attending.");
+      return;
+    }
+    if (attendance === "yes" && (!attendWedding || !attendReception)) {
+      alert("Please tell us which celebrations you will be attending.");
       return;
     }
     setIsSubmitting(true);
@@ -64,6 +72,62 @@ export default function RsvpSection() {
                 Regretfully Decline
               </button>
             </div>
+
+            {attendance === "yes" && (
+              <div className="rsvp-questions">
+                <div className="rsvp-question">
+                  <span className="rsvp-question__label">
+                    Attending the Wedding?
+                  </span>
+                  <div className="rsvp-question__pills">
+                    <button
+                      type="button"
+                      className={`rsvp-pill${
+                        attendWedding === "yes" ? " rsvp-pill--yes" : ""
+                      }`}
+                      onClick={() => setAttendWedding("yes")}
+                    >
+                      Yes
+                    </button>
+                    <button
+                      type="button"
+                      className={`rsvp-pill${
+                        attendWedding === "no" ? " rsvp-pill--no" : ""
+                      }`}
+                      onClick={() => setAttendWedding("no")}
+                    >
+                      No
+                    </button>
+                  </div>
+                </div>
+
+                <div className="rsvp-question">
+                  <span className="rsvp-question__label">
+                    Attending the Reception?
+                  </span>
+                  <div className="rsvp-question__pills">
+                    <button
+                      type="button"
+                      className={`rsvp-pill${
+                        attendReception === "yes" ? " rsvp-pill--yes" : ""
+                      }`}
+                      onClick={() => setAttendReception("yes")}
+                    >
+                      Yes
+                    </button>
+                    <button
+                      type="button"
+                      className={`rsvp-pill${
+                        attendReception === "no" ? " rsvp-pill--no" : ""
+                      }`}
+                      onClick={() => setAttendReception("no")}
+                    >
+                      No
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
 
             <div className="input-group">
               <input

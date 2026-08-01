@@ -192,12 +192,12 @@ export default function PortraitScratchCard() {
         }`}
         role="button"
         tabIndex={0}
-        aria-label="A hidden portrait of Sushil and Aishwarya. Scratch with your finger or mouse to reveal it, or press Enter to reveal instantly."
+        aria-label="A hidden portrait of Sushil and Aiswarya. Scratch with your finger or mouse to reveal it, or press Enter to reveal instantly."
         onKeyDown={handleKeyDown}
       >
         <img
           src={REVEAL_SRC}
-          alt="Sushil and Aishwarya"
+          alt="Sushil and Aiswarya"
           className="portrait-img portrait-img--photo"
           draggable={false}
         />
