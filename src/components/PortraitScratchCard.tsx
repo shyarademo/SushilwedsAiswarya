@@ -188,41 +188,64 @@ export default function PortraitScratchCard() {
   };
 
   return (
-    <div
-      className={`portrait-frame portrait-scratch${
-        isRevealed ? " portrait-scratch--revealed" : ""
-      }`}
-      role="button"
-      tabIndex={0}
-      aria-label="A hidden portrait of Sushil and Aishwarya. Scratch with your finger or mouse to reveal it, or press Enter to reveal instantly."
-      onKeyDown={handleKeyDown}
-    >
-      <img
-        src={REVEAL_SRC}
-        alt="Sushil and Aishwarya"
-        className="portrait-img portrait-img--photo"
-        draggable={false}
-      />
+    <div className="portrait-scratch-stage">
+      <div
+        className={`portrait-frame portrait-scratch${
+          isRevealed ? " portrait-scratch--revealed" : ""
+        }`}
+        role="button"
+        tabIndex={0}
+        aria-label="A hidden portrait of Sushil and Aishwarya. Scratch with your finger or mouse to reveal it, or press Enter to reveal instantly."
+        onKeyDown={handleKeyDown}
+      >
+        <img
+          src={REVEAL_SRC}
+          alt="Sushil and Aishwarya"
+          className="portrait-img portrait-img--photo"
+          draggable={false}
+        />
 
-      <canvas
-        ref={canvasRef}
-        className="portrait-scratch__canvas"
-        onPointerDown={handlePointerDown}
-        onPointerMove={handlePointerMove}
-        onPointerUp={endStroke}
-        onPointerCancel={endStroke}
-        onContextMenu={(e) => e.preventDefault()}
-        aria-hidden="true"
-      />
+        <canvas
+          ref={canvasRef}
+          className="portrait-scratch__canvas"
+          onPointerDown={handlePointerDown}
+          onPointerMove={handlePointerMove}
+          onPointerUp={endStroke}
+          onPointerCancel={endStroke}
+          onContextMenu={(e) => e.preventDefault()}
+          aria-hidden="true"
+        />
+      </div>
 
-      <span
-        className={`portrait-scratch__hint${
-          hasStarted ? " portrait-scratch__hint--hidden" : ""
+      {/* Handwritten "Scratch this!" note with a curved arrow pointing
+          into the frame from outside its top-right corner */}
+      <div
+        className={`portrait-scratch__callout${
+          hasStarted || isRevealed ? " portrait-scratch__callout--hidden" : ""
         }`}
         aria-hidden="true"
       >
-        Scratch to reveal
-      </span>
+        <span className="portrait-scratch__callout-text">Scratch this!</span>
+        <svg
+          className="portrait-scratch__callout-arrow"
+          viewBox="0 0 64 64"
+          fill="none"
+        >
+          <path
+            d="M52 6 C 56 26, 44 44, 14 54"
+            stroke="currentColor"
+            strokeWidth="2.2"
+            strokeLinecap="round"
+          />
+          <path
+            d="M25 56 L14 54 L22 46"
+            stroke="currentColor"
+            strokeWidth="2.2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      </div>
     </div>
   );
 }

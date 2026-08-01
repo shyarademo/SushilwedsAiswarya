@@ -7,15 +7,36 @@ import RsvpSection from "@/components/RsvpSection";
 
 export default function HomePage() {
   useEffect(() => {
-    // Subtle scroll parallax on the welcome text block
-    const handleScroll = () => {
-      const scrolled = window.scrollY;
-      const welcomeEl = document.getElementById("welcome-text-parallax");
+    // Subtle scroll parallax on the welcome text block.
+    // Perf-critical: batch writes into requestAnimationFrame (scroll events
+    // can fire several times per frame), cache the element, and stop writing
+    // once the section has scrolled out of view.
+    const welcomeEl = document.getElementById("welcome-text-parallax");
+
+    // The section shifts up by 0.12 × scrollY, so it is fully off-screen
+    // once scrollY exceeds (offsetTop + height) / (1 − 0.12)
+    let parallaxEnd = Infinity;
+    const measure = () => {
       if (welcomeEl) {
-        welcomeEl.style.transform = `translateY(${scrolled * -0.12}px)`;
+        parallaxEnd = (welcomeEl.offsetTop + welcomeEl.offsetHeight) / 0.88;
       }
     };
+    measure();
+
+    let rafId = 0;
+    const handleScroll = () => {
+      if (rafId) return;
+      rafId = requestAnimationFrame(() => {
+        rafId = 0;
+        if (!welcomeEl) return;
+        const scrolled = window.scrollY;
+        if (scrolled <= parallaxEnd) {
+          welcomeEl.style.transform = `translate3d(0, ${scrolled * -0.12}px, 0)`;
+        }
+      });
+    };
     window.addEventListener("scroll", handleScroll, { passive: true });
+    window.addEventListener("resize", measure, { passive: true });
 
     // IntersectionObserver — staggered entrance reveals
     const observer = new IntersectionObserver(
@@ -35,6 +56,8 @@ export default function HomePage() {
 
     return () => {
       window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("resize", measure);
+      if (rafId) cancelAnimationFrame(rafId);
       observer.disconnect();
     };
   }, []);
