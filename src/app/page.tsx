@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import CountdownTimer from "@/components/CountdownTimer";
 import EventTimeline from "@/components/EventTimeline";
+import MusicPlayer from "@/components/MusicPlayer";
 import PortraitScratchCard from "@/components/PortraitScratchCard";
 import RsvpSection from "@/components/RsvpSection";
 import SideSelector from "@/components/SideSelector";
@@ -104,11 +105,11 @@ export default function HomePage() {
             Together with their families
           </p>
 
-          {/* Groom block */}
+          {/* Bride block */}
           <div className="welcome-person scroll-anim delay-2">
-            <h1 className="welcome-name">Sushil</h1>
+            <h1 className="welcome-name">Aiswary</h1>
             <p className="welcome-parents">
-              Son of Shri. Suraj T R &amp; Smt. Sai Latha V S (Late)
+              Daughter of Smt. Anitha M N &amp; Shri. Ajit P Vasu
             </p>
           </div>
 
@@ -122,11 +123,11 @@ export default function HomePage() {
             <span className="welcome-amp-rule welcome-amp-rule--right"></span>
           </div>
 
-          {/* Bride block */}
+          {/* Groom block */}
           <div className="welcome-person scroll-anim delay-4">
-            <h1 className="welcome-name">Aiswarya</h1>
+            <h1 className="welcome-name">Sushil</h1>
             <p className="welcome-parents">
-              Daughter of Smt. Anitha M N &amp; Shri. Ajit P Vasu
+              Son of Shri. Suraj T R &amp; Smt. Sai Latha V S (Late)
             </p>
           </div>
 
@@ -154,7 +155,7 @@ export default function HomePage() {
             <p className="portrait-caption">
               Sushil
               <span className="portrait-caption__amp">&amp;</span>
-              Aiswarya
+              Aiswary
             </p>
           </div>
         </section>
@@ -217,6 +218,9 @@ export default function HomePage() {
         </footer>
 
       </div>
+
+      {/* Ambient music + floating play/pause control */}
+      <MusicPlayer />
     </>
   );
 }

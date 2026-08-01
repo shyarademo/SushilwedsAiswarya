@@ -25,7 +25,7 @@ export default function SideSelector() {
         >
           <span className="side-card__glow" aria-hidden="true"></span>
           <span className="side-card__label">Bride&apos;s Side</span>
-          <span className="side-card__name">Aiswarya</span>
+          <span className="side-card__name">Aiswary</span>
           <span className="side-card__tag">Team Bride</span>
         </button>
 
@@ -58,7 +58,7 @@ export default function SideSelector() {
             key={side}
           >
             {side === "bride"
-              ? "Lovely choice \u2014 you\u2019re cheering for Aiswarya!"
+              ? "Lovely choice \u2014 you\u2019re cheering for Aiswary!"
               : "Wonderful \u2014 you\u2019re cheering for Sushil!"}
           </p>
         )}

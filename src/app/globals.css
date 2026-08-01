@@ -337,7 +337,7 @@ body {
   margin-bottom: 4px;
 }
 
-/* Script name — Sushil / Aiswarya */
+/* Script name — Sushil / Aiswary */
 .welcome-name {
   font-family: var(--font-script), cursive;
   font-size: 5.5rem;
@@ -768,7 +768,7 @@ body {
   }
 }
 
-/* Portrait caption: "Sushil & Aiswarya" */
+/* Portrait caption: "Sushil & Aiswary" */
 .portrait-caption {
   font-family: var(--font-script), cursive;
   font-size: 3rem;
@@ -1752,6 +1752,81 @@ body {
 }
 
 /* ════════════════════════════════════════════════════════════════════
+   MUSIC TOGGLE — floating play/pause, bottom right
+════════════════════════════════════════════════════════════════════ */
+.music-toggle {
+  position: fixed;
+  right: 18px;
+  bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+  z-index: 60;
+  width: 52px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 1px solid rgba(212, 168, 67, 0.55);
+  background: linear-gradient(
+    160deg,
+    rgba(255, 252, 244, 0.96),
+    rgba(248, 237, 218, 0.94)
+  );
+  color: var(--maroon);
+  cursor: pointer;
+  box-shadow:
+    0 10px 26px -10px rgba(122, 31, 46, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.85);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.music-toggle:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 14px 30px -10px rgba(122, 31, 46, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.85);
+}
+
+.music-toggle:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 3px;
+}
+
+.music-toggle__icon {
+  width: 22px;
+  height: 22px;
+  display: block;
+}
+
+/* Gentle gold breathing ring, only while the music plays */
+.music-toggle__ring {
+  position: absolute;
+  inset: -5px;
+  border-radius: 50%;
+  border: 1px solid rgba(212, 168, 67, 0.55);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.music-toggle--playing .music-toggle__ring {
+  animation: musicRing 2.6s ease-out infinite;
+}
+
+@keyframes musicRing {
+  0% {
+    opacity: 0.7;
+    transform: scale(0.92);
+  }
+  70% {
+    opacity: 0;
+    transform: scale(1.28);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.28);
+  }
+}
+
+/* ════════════════════════════════════════════════════════════════════
    FOOTER SECTION
 ════════════════════════════════════════════════════════════════════ */
 .footer-section {
@@ -1947,7 +2022,8 @@ body {
   .countdown__value,
   .side-result,
   .rsvp-questions,
-  .atc__menu {
+  .atc__menu,
+  .music-toggle--playing .music-toggle__ring {
     animation: none;
   }
 
