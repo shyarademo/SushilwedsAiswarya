@@ -18,7 +18,7 @@ const EVENTS: WeddingEvent[] = [
     venue: "Ernakulam Shiva Temple",
     mapLink:
       "https://www.google.com/maps/place/X79J%2BC93+Ernakulam+Shiva+Temple+West+Gopuram,+Pallimukku,+Kochi,+Ernakulam,+Kerala+682011/data=!4m2!3m1!1s0x3b08730eef982efb:0x6abed4af82314806!18m1!1e1?utm_source=mstt_1&entry=gps&coh=192189&g_ep=CAESBzI2LjI5LjIYACCenQoqlQEsOTQyNjc3MjcsOTQyOTIxOTUsOTQyOTk1MzIsMTAwNzk2NDk4LDEwMDc5Nzc2MSwxMDA3OTY1MzUsOTQyODA1NzYsOTQyMDczOTQsOTQyMDc1MDYsOTQyMDg1MDYsOTQyMTg2NTMsOTQyMjk4MzksOTQyNzUxNjgsOTQyNzk2MTksMTAwODE1NjQwLDEwMDgyMDIzN0ICSU4%3D&skid=ab907d6d-3b3a-4e67-9666-567cc9a7e22b&g_st=aw",
-    cardBg: "/images/Muhurtham Card BG.svg",
+    cardBg: "/images/Morning.webp",
   },
   {
     id: "lunch",
@@ -28,7 +28,7 @@ const EVENTS: WeddingEvent[] = [
     venue: "TDM Hall",
     mapLink:
       "https://www.google.com/maps/place/X79M%2B5HP+TDM+Hall,+Durbar+Hall+Rd,+opposite+Durbar+Hall+Ground,+Ernakulam+South,+Ernakulam,+Kerala+682016,+India/data=!4m2!3m1!1s0x3b0872b21e2ce8ef:0x4b0aa762fde2bb71!18m1!1e1?utm_source=mstt_1&entry=gps&coh=192189&g_ep=CAESBzI2LjI5LjIYACCenQoqlQEsOTQyNjc3MjcsOTQyOTIxOTUsOTQyOTk1MzIsMTAwNzk2NDk4LDEwMDc5Nzc2MSwxMDA3OTU2MjUsOTQyODA1NzYsOTQyMDczOTQsOTQyMDc1MDYsOTQyMDg1MDYsOTQyMTg2NTMsOTQyMjk4MzksOTQyNzUxNjgsOTQyNzk2MTksMTAwODE1NjQwLDEwMDgxMjk5NEICQUU%3D&skid=cc788467-737d-4881-9fe0-e446d4cac314&g_st=aw",
-    cardBg: "/images/Lunch Card BG.svg",
+    cardBg: "/images/Afternoon.webp",
   },
   {
     id: "reception",
@@ -38,7 +38,7 @@ const EVENTS: WeddingEvent[] = [
     venue: "Konkan Samudhai Bhavan",
     mapLink:
       "https://www.google.com/maps/place/1st+Floor,+Konkan+Samudhai+Bhavan,+90,+7th+Main+Rd,+Chellikere,+Chelekare,+Kalyan+Nagar,+Bengaluru,+Karnataka+560043/data=!4m2!3m1!1s0x3bae172fe0932ac9:0x5aac6453cb4328b9!18m1!1e1?utm_source=mstt_1&entry=gps&coh=192189&g_ep=CAESBzI2LjI5LjIYACCenQoqlQEsOTQyNjc3MjcsOTQyOTIxOTUsOTQyOTk1MzIsMTAwNzk2NDk4LDEwMDc5Nzc2MSwxMDA3OTY1MzUsOTQyODA1NzYsOTQyMDczOTQsOTQyMDc1MDYsOTQyMDg1MDYsOTQyMTg2NTMsOTQyMjk4MzksOTQyNzUxNjgsOTQyNzk2MTksMTAwODE1NjQwLDEwMDgyMDIzN0ICSU4%3D&skid=056b68d5-ea69-4323-9978-ad43574a91e6&g_st=aw",
-    cardBg: "/images/Reception Card BG.svg",
+    cardBg: "/images/Night.webp",
   },
 ];
 
@@ -65,9 +65,7 @@ export default function EventTimeline() {
             }${idx === EVENTS.length - 1 ? " ev-scene--last" : ""}`}
             key={ev.id}
           >
-            {/* Scene illustration filling the band. The SVG artwork is a
-                landscape strip centred in a square transparent canvas, so
-                it is oversized and centred to crop the empty margins away. */}
+            {/* Scene illustration filling the band edge-to-edge */}
             <img
               src={ev.cardBg}
               alt=""

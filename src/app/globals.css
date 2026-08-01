@@ -710,9 +710,13 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 28px 30px;
+  /* 96px art margin: larger than every fade zone (90px edge fades,
+     100px junction intrusion), so panels always sit on fully opaque
+     artwork with symmetric scenery above and below.
+     No overflow clip: artwork extends past the box so junction
+     cross-fades blend art over art (masks handle invisibility). */
+  padding: 96px 30px;
   text-align: center;
-  overflow: hidden;
 }
 
 /* Consecutive scenes overlap the previous one by --scene-overlap and
@@ -721,35 +725,52 @@ body {
    band of height H for any H. */
 .ev-scene--overlap {
   margin-top: calc(-1 * var(--scene-overlap));
-  padding-top: calc(28px + var(--scene-overlap));
+  padding-top: calc(96px + var(--scene-overlap));
 }
 
-/* Scene illustration. The artwork is a 768×429 landscape band vertically
-   centred in a square transparent canvas (~1.79× band height).
-   Overlapped scenes (box = H + overlap) use 180%; the first scene
-   (box = H) uses calc(180% + 1.8 × overlap) so every image renders
-   at exactly 1.8H + 180px — identical zoom and crop. */
+/* Scene illustration: edge-to-edge artwork, object-fit cover.
+   Every image box is exactly (row height + 2 × overlap) tall regardless
+   of scene, so all three render at the identical scale:
+   - scene 1 (box = H): extends one overlap above AND below the box
+   - overlapped scenes (box = H + overlap): extend one overlap below only
+   The below-box extension lets the NEXT scene's cross-fade blend over
+   real artwork for its entire length — no washed-out band at junctions.
+   Masks keep every out-of-band region invisible. */
 .ev-scene__bg {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  height: 180%;
-  width: auto;
-  min-width: 100%;
+  left: 0;
+  width: 100%;
+  top: calc(-1 * var(--scene-overlap));
+  /* img is a replaced element: bottom+auto-height would be ignored,
+     so the H + 2×overlap box height is set explicitly */
+  height: calc(100% + 2 * var(--scene-overlap));
+  object-fit: cover;
+  object-position: center;
   pointer-events: none;
   user-select: none;
 }
 
+.ev-scene--overlap .ev-scene__bg {
+  top: 0;
+  height: calc(100% + var(--scene-overlap));
+}
+
 /* Soft edges: the first scene rises out of the parchment, each overlap
    fades over the scene above, and the last melts back into parchment.
-   The fade length is 2 × the overlap, which places the perceived
-   junction exactly on the original stacking line between scenes.
-   First scene also corrects image height so it matches overlapped ones. */
+   The junction fade length is 2 × the overlap, centred exactly on the
+   row boundary. Scene 1's mask hides its 100px above-box extension,
+   then fades in over 90px. */
 .ev-scene--first .ev-scene__bg {
-  height: calc(180% + calc(1.8 * var(--scene-overlap)));
-  -webkit-mask-image: linear-gradient(to bottom, transparent, black 90px);
-  mask-image: linear-gradient(to bottom, transparent, black 90px);
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent var(--scene-overlap),
+    black calc(var(--scene-overlap) + 90px)
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    transparent var(--scene-overlap),
+    black calc(var(--scene-overlap) + 90px)
+  );
 }
 
 .ev-scene--overlap .ev-scene__bg {
@@ -765,26 +786,32 @@ body {
   );
 }
 
+/* Last scene: junction fade at top, then fade out over 90px ending at
+   the scene box bottom (the image extends one overlap below the box,
+   which must stay fully transparent) */
 .ev-scene--overlap.ev-scene--last .ev-scene__bg {
   -webkit-mask-image: linear-gradient(
     to bottom,
     transparent,
     black calc(var(--scene-overlap) * 2),
-    black calc(100% - 90px),
-    transparent
+    black calc(100% - var(--scene-overlap) - 90px),
+    transparent calc(100% - var(--scene-overlap))
   );
   mask-image: linear-gradient(
     to bottom,
     transparent,
     black calc(var(--scene-overlap) * 2),
-    black calc(100% - 90px),
-    transparent
+    black calc(100% - var(--scene-overlap) - 90px),
+    transparent calc(100% - var(--scene-overlap))
   );
 }
 
-/* Frosted glass panel holding the event details */
+/* Frosted glass panel holding the event details.
+   z-index lifts it above the NEXT scene's overlapping artwork, which
+   otherwise paints over this card's lower edge (later DOM order). */
 .ev-scene__glass {
   position: relative;
+  z-index: 2;
   width: 100%;
   padding: 26px 18px 28px;
   border-radius: 12px;
