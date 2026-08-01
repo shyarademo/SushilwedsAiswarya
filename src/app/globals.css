@@ -1077,6 +1077,105 @@ body {
   outline: none;
 }
 
+/* Action pills row: Get Directions + Add to Calendar */
+.ev-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+/* ── Add to Calendar popover ── */
+.atc {
+  position: relative;
+  display: inline-flex;
+}
+
+.atc__toggle {
+  cursor: pointer;
+}
+
+/* Parchment menu floating above the button */
+.atc__menu {
+  position: absolute;
+  bottom: calc(100% + 12px);
+  left: 50%;
+  transform: translate(-50%, 0);
+  min-width: 200px;
+  padding: 6px;
+  border-radius: 12px;
+  border: 1px solid rgba(212, 168, 67, 0.5);
+  background: rgba(253, 250, 243, 0.97);
+  box-shadow:
+    0 18px 40px -16px rgba(122, 31, 46, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.85);
+  z-index: 30;
+  animation: atcMenuIn 0.22s ease both;
+}
+
+/* Small gold diamond caret pointing at the button */
+.atc__menu::after {
+  content: "";
+  position: absolute;
+  bottom: -5px;
+  left: 50%;
+  width: 9px;
+  height: 9px;
+  transform: translateX(-50%) rotate(45deg);
+  background: rgba(253, 250, 243, 0.97);
+  border-right: 1px solid rgba(212, 168, 67, 0.5);
+  border-bottom: 1px solid rgba(212, 168, 67, 0.5);
+}
+
+@keyframes atcMenuIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 6px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+.atc__option {
+  display: block;
+  width: 100%;
+  padding: 11px 16px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  font-family: var(--font-caps), serif;
+  font-size: 0.62rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--maroon);
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.atc__option:hover,
+.atc__option:focus {
+  background: rgba(212, 168, 67, 0.14);
+  color: var(--maroon-light);
+  outline: none;
+}
+
+.atc__rule {
+  display: block;
+  height: 1px;
+  margin: 2px 10px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    rgba(212, 168, 67, 0.4),
+    transparent
+  );
+}
+
 /* ════════════════════════════════════════════════════════════════════
    SIDE SELECTOR — Bride's side or Groom's side
 ════════════════════════════════════════════════════════════════════ */
@@ -1847,7 +1946,8 @@ body {
   .portrait-scratch--revealed .portrait-img--photo,
   .countdown__value,
   .side-result,
-  .rsvp-questions {
+  .rsvp-questions,
+  .atc__menu {
     animation: none;
   }
 
@@ -1857,7 +1957,8 @@ body {
   .toggle-btn,
   .rsvp-submit,
   .side-card,
-  .rsvp-pill {
+  .rsvp-pill,
+  .atc__option {
     transition: none;
   }
 }
