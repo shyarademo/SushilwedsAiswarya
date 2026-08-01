@@ -426,6 +426,165 @@ body {
 }
 
 /* ════════════════════════════════════════════════════════════════════
+   COUNTDOWN — to the Muhurtham
+════════════════════════════════════════════════════════════════════ */
+.countdown {
+  position: relative;
+  margin-top: 10px;
+}
+
+/* Handwritten lead-in line */
+.countdown__lead {
+  font-family: var(--font-brush), cursive;
+  font-size: clamp(1.5rem, 5.5vw, 1.9rem);
+  line-height: 1.35;
+  color: var(--maroon);
+  margin-bottom: 20px;
+}
+
+.countdown__grid {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+}
+
+/* Soft golden aura pooling behind the tiles */
+.countdown__grid::before {
+  content: "";
+  position: absolute;
+  inset: -20px -10px;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(212, 168, 67, 0.16),
+    transparent 70%
+  );
+  pointer-events: none;
+}
+
+.countdown__cell-wrap {
+  display: flex;
+  align-items: center;
+}
+
+/* Tiny gold diamonds between the tiles */
+.countdown__sep {
+  display: block;
+  width: 5px;
+  height: 5px;
+  margin: 0 clamp(7px, 2.4vw, 15px);
+  transform: rotate(45deg);
+  background: rgba(212, 168, 67, 0.65);
+  box-shadow: 0 0 6px rgba(212, 168, 67, 0.5);
+}
+
+/* Parchment jewel tile */
+.countdown__cell {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: clamp(60px, 16.5vw, 82px);
+  padding: 15px 8px 12px;
+  border-radius: 14px;
+  background: linear-gradient(
+    160deg,
+    rgba(255, 252, 244, 0.95),
+    rgba(248, 237, 218, 0.9)
+  );
+  border: 1px solid rgba(212, 168, 67, 0.38);
+  box-shadow:
+    0 12px 26px -16px rgba(122, 31, 46, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    inset 0 0 20px rgba(212, 168, 67, 0.08);
+}
+
+/* Gold diamond keystone on the tile's top edge */
+.countdown__notch {
+  position: absolute;
+  top: -4px;
+  left: 50%;
+  width: 7px;
+  height: 7px;
+  transform: translateX(-50%) rotate(45deg);
+  border-radius: 1px;
+  background: linear-gradient(135deg, var(--gold-light), var(--gold-dark));
+  box-shadow: 0 0 6px rgba(212, 168, 67, 0.6);
+}
+
+.countdown__value {
+  font-family: var(--font-caps), serif;
+  font-size: clamp(1.5rem, 6vw, 2.1rem);
+  font-weight: 600;
+  line-height: 1.15;
+  font-variant-numeric: tabular-nums;
+  background: linear-gradient(
+    180deg,
+    var(--maroon-light) 10%,
+    var(--maroon) 55%,
+    #5c1622 95%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  animation: countTick 0.45s ease both;
+}
+
+/* One-shot settle when a number changes (element is remounted per tick) */
+@keyframes countTick {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.countdown__label {
+  margin-top: 5px;
+  font-family: var(--font-caps), serif;
+  font-size: 0.55rem;
+  letter-spacing: 2.5px;
+  text-indent: 2.5px;
+  text-transform: uppercase;
+  color: var(--text-soft);
+}
+
+/* Fine-print line naming the moment */
+.countdown__when {
+  margin-top: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  font-family: var(--font-serif), serif;
+  font-style: italic;
+  font-size: 0.84rem;
+  letter-spacing: 0.5px;
+  color: var(--text-soft);
+}
+
+.countdown__when-dot {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: rgba(212, 168, 67, 0.7);
+}
+
+/* Shown once the moment arrives */
+.countdown__arrived {
+  font-family: var(--font-script), cursive;
+  font-size: clamp(1.6rem, 6vw, 2.2rem);
+  line-height: 1.35;
+  color: var(--maroon);
+  padding: 6px 0;
+}
+
+/* ════════════════════════════════════════════════════════════════════
    COUPLE PORTRAIT SECTION
 ════════════════════════════════════════════════════════════════════ */
 .portrait-section {
@@ -1316,7 +1475,8 @@ body {
   .welcome-deco__mote,
   .footer-names-wrap::before,
   .portrait-scratch__callout,
-  .portrait-scratch--revealed .portrait-img--photo {
+  .portrait-scratch--revealed .portrait-img--photo,
+  .countdown__value {
     animation: none;
   }
 

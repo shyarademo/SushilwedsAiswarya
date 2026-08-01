@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import CountdownTimer from "@/components/CountdownTimer";
 import EventTimeline from "@/components/EventTimeline";
 import PortraitScratchCard from "@/components/PortraitScratchCard";
 import RsvpSection from "@/components/RsvpSection";
@@ -132,6 +133,9 @@ export default function HomePage() {
           <div className="welcome-invite scroll-anim delay-5">
             <p className="welcome-invited">You are warmly invited</p>
           </div>
+
+          {/* Countdown to the Muhurtham */}
+          <CountdownTimer />
 
         </div>
 
