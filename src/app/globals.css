@@ -429,7 +429,9 @@ body {
    COUPLE PORTRAIT SECTION
 ════════════════════════════════════════════════════════════════════ */
 .portrait-section {
-  padding: 20px 0 56px;
+  /* Generous top padding: the "Scratch this!" callout floats ~35px above
+     the frame and this section clips overflow */
+  padding: 64px 0 56px;
   display: flex;
   flex-direction: column;
   align-items: center;
