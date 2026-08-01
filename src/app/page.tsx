@@ -107,7 +107,7 @@ export default function HomePage() {
 
           {/* Bride block */}
           <div className="welcome-person scroll-anim delay-2">
-            <h1 className="welcome-name">Aiswary</h1>
+            <h1 className="welcome-name">Aiswarya</h1>
             <p className="welcome-parents">
               Daughter of Smt. Anitha M N &amp; Shri. Ajit P Vasu
             </p>
@@ -155,7 +155,7 @@ export default function HomePage() {
             <p className="portrait-caption">
               Sushil
               <span className="portrait-caption__amp">&amp;</span>
-              Aiswary
+              Aiswarya
             </p>
           </div>
         </section>

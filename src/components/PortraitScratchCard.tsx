@@ -2,8 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 
-const COVER_SRC = "/images/Aiswary and Sushil Without BG Caricature.svg";
-const REVEAL_SRC = "/images/Aiswary and Sushil Without BG.png";
+const COVER_SRC = "/images/Aiswarya and Sushil Without BG Caricature.svg";
+const REVEAL_SRC = "/images/Aiswarya and Sushil Without BG.png";
 
 /** Portion of the cover that must be scratched before it auto-reveals. */
 const REVEAL_THRESHOLD = 0.5;
@@ -192,12 +192,12 @@ export default function PortraitScratchCard() {
         }`}
         role="button"
         tabIndex={0}
-        aria-label="A hidden portrait of Sushil and Aiswary. Scratch with your finger or mouse to reveal it, or press Enter to reveal instantly."
+        aria-label="A hidden portrait of Sushil and Aiswarya. Scratch with your finger or mouse to reveal it, or press Enter to reveal instantly."
         onKeyDown={handleKeyDown}
       >
         <img
           src={REVEAL_SRC}
-          alt="Sushil and Aiswary"
+          alt="Sushil and Aiswarya"
           className="portrait-img portrait-img--photo"
           draggable={false}
         />

@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 
 export interface CalendarEventInfo {
-  /** Calendar entry title, e.g. "Sushil weds Aiswary — Wedding" */
+  /** Calendar entry title, e.g. "Sushil weds Aiswarya — Wedding" */
   title: string;
   description: string;
   location: string;
@@ -46,11 +46,11 @@ function buildIcs(ev: CalendarEventInfo): string {
   return [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
-    "PRODID:-//Sushil weds Aiswary//Wedding Website//EN",
+    "PRODID:-//Sushil weds Aiswarya//Wedding Website//EN",
     "CALSCALE:GREGORIAN",
     "METHOD:PUBLISH",
     "BEGIN:VEVENT",
-    `UID:${ev.uid}@sushilwedsaiswary`,
+    `UID:${ev.uid}@sushilwedsaiswarya`,
     `DTSTAMP:${toUtcBasic(new Date().toISOString())}`,
     `DTSTART:${toUtcBasic(ev.start)}`,
     `DTEND:${toUtcBasic(ev.end)}`,

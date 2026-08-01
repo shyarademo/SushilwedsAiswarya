@@ -40,11 +40,11 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "Sushil weds Aiswary",
+  title: "Sushil weds Aiswarya",
   description:
-    "You are warmly invited to celebrate the wedding of Sushil and Aiswary — September 2026, Kochi & Bengaluru.",
+    "You are warmly invited to celebrate the wedding of Sushil and Aiswarya — September 2026, Kochi & Bengaluru.",
   openGraph: {
-    title: "Sushil weds Aiswary",
+    title: "Sushil weds Aiswarya",
     description:
       "Join us for our wedding celebration — September 2026, Kochi & Bengaluru.",
     images: [
@@ -52,7 +52,7 @@ export const metadata: Metadata = {
         url: "/images/hero-couple.webp",
         width: 1024,
         height: 1536,
-        alt: "Sushil & Aiswary",
+        alt: "Sushil & Aiswarya",
       },
     ],
     type: "website",
