@@ -617,10 +617,10 @@ body {
 
 /* Arch-shaped frame with double gold border */
 .portrait-frame {
-  /* Fluid: caps at 300px, shrinks on narrow phones */
-  width: min(300px, 78vw);
+  /* Fluid: caps at 340px, shrinks on narrow phones */
+  width: min(340px, 84vw);
   aspect-ratio: 226 / 316;
-  border-radius: 150px 150px 16px 16px;
+  border-radius: 170px 170px 18px 18px;
   overflow: hidden;
   background: var(--beige);
   box-shadow:
@@ -721,7 +721,7 @@ body {
 
 .portrait-scratch__callout-text {
   font-family: var(--font-brush), cursive;
-  font-size: 2rem;
+  font-size: 2.25rem;
   line-height: 1;
   white-space: nowrap;
   transform: rotate(-6deg);
@@ -743,9 +743,9 @@ body {
 }
 
 .portrait-scratch__callout-arrow {
-  width: 54px;
-  height: 54px;
-  margin: 4px 0 0 12px;
+  width: 60px;
+  height: 60px;
+  margin: 4px 0 0 14px;
 }
 
 /* Transform-only float: cheap for the compositor */
