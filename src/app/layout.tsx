@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Playfair_Display, Great_Vibes, Alex_Brush, Cinzel } from "next/font/google";
+import { Playfair_Display, Allura, Alex_Brush, Cinzel } from "next/font/google";
 import "./globals.css";
 
 const playfair = Playfair_Display({
@@ -9,7 +9,9 @@ const playfair = Playfair_Display({
   display: "swap",
 });
 
-const greatVibes = Great_Vibes({
+/* Allura: elegant wedding script whose capital "A" reads clearly as an A
+   (Great Vibes drew it like an oversized lowercase "a") */
+const allura = Allura({
   subsets: ["latin"],
   weight: "400",
   variable: "--font-script",
@@ -65,7 +67,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${playfair.variable} ${greatVibes.variable} ${alexBrush.variable} ${cinzel.variable}`}
+      className={`${playfair.variable} ${allura.variable} ${alexBrush.variable} ${cinzel.variable}`}
     >
       <body>{children}</body>
     </html>
