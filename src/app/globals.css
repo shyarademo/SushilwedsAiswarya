@@ -648,7 +648,8 @@ body {
    EVENT TIMELINE
 ════════════════════════════════════════════════════════════════════ */
 #timeline {
-  padding: 20px 24px 48px;
+  /* No side padding: the scene panorama bleeds to the card edges */
+  padding: 20px 0 48px;
   position: relative;
 }
 
@@ -656,6 +657,7 @@ body {
 .timeline-header {
   text-align: center;
   margin-bottom: 44px;
+  padding: 0 24px;
 }
 
 .timeline-eyebrow {
@@ -688,37 +690,31 @@ body {
   letter-spacing: 0.3px;
 }
 
-/* Individual event card: full-bleed scene illustration behind a
-   frosted glass panel */
-.ev-card {
-  background: var(--beige-deep);
-  border: 1px solid rgba(212, 168, 67, 0.55);
-  border-radius: 16px;
-  padding: 52px 24px;
-  margin-bottom: 24px;
-  text-align: center;
+/* Panorama wrapper: scenes stack with no gaps */
+.timeline-scenes {
   position: relative;
-  overflow: hidden;
-  box-shadow:
-    0 4px 18px rgba(45, 26, 16, 0.10),
-    0 1px 5px rgba(45, 26, 16, 0.06);
-  transition:
-    transform   0.35s cubic-bezier(0.22, 0.84, 0.22, 1),
-    box-shadow  0.35s cubic-bezier(0.22, 0.84, 0.22, 1);
 }
 
-.ev-card:hover {
-  transform: translateY(-4px);
-  box-shadow:
-    0 14px 40px rgba(122, 31, 46, 0.16),
-    0 4px 12px rgba(45, 26, 16, 0.08);
+/* One full-bleed scene band per event */
+.ev-scene {
+  position: relative;
+  padding: 72px 30px;
+  text-align: center;
+  overflow: hidden;
+}
+
+/* Consecutive scenes overlap and cross-fade into the previous one,
+   so junctions read as one continuous landscape */
+.ev-scene--overlap {
+  margin-top: -100px;
+  padding-top: 172px;
 }
 
 /* Scene illustration. The artwork is a 768×429 landscape band vertically
    centred in a square transparent canvas, so the image is oversized to
-   180% of the card height: the band then exactly covers the card and the
-   transparent margins crop away. */
-.ev-card__bg {
+   180% of the scene height: the band then exactly covers the scene and
+   the transparent margins crop away. */
+.ev-scene__bg {
   position: absolute;
   top: 50%;
   left: 50%;
@@ -730,8 +726,37 @@ body {
   user-select: none;
 }
 
-/* Frosted glass panel holding the card content */
-.ev-card__glass {
+/* Soft edges: the first scene rises out of the parchment, each overlap
+   fades over the scene above, and the last melts back into parchment */
+.ev-scene--first .ev-scene__bg {
+  -webkit-mask-image: linear-gradient(to bottom, transparent, black 90px);
+  mask-image: linear-gradient(to bottom, transparent, black 90px);
+}
+
+.ev-scene--overlap .ev-scene__bg {
+  -webkit-mask-image: linear-gradient(to bottom, transparent, black 150px);
+  mask-image: linear-gradient(to bottom, transparent, black 150px);
+}
+
+.ev-scene--overlap.ev-scene--last .ev-scene__bg {
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent,
+    black 150px,
+    black calc(100% - 90px),
+    transparent
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    transparent,
+    black 150px,
+    black calc(100% - 90px),
+    transparent
+  );
+}
+
+/* Frosted glass panel holding the event details */
+.ev-scene__glass {
   position: relative;
   padding: 26px 18px 28px;
   border-radius: 12px;
@@ -1240,7 +1265,6 @@ body {
 
   /* Disable hover transitions */
   .portrait-frame,
-  .ev-card,
   .ev-card__maplink,
   .toggle-btn,
   .rsvp-submit {

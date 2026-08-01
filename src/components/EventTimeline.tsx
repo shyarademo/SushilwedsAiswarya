@@ -55,50 +55,55 @@ export default function EventTimeline() {
         </p>
       </div>
 
-      {/* Illustrated event cards with frosted glass panels */}
-      {EVENTS.map((ev, idx) => (
-        <article
-          className={`ev-card scroll-anim delay-${idx + 2}`}
-          key={ev.id}
-        >
-          {/* Scene illustration filling the card. The SVG artwork is a
-              landscape band centred in a square transparent canvas, so it
-              is oversized and centred to crop the empty margins away. */}
-          <img
-            src={ev.cardBg}
-            alt=""
-            className="ev-card__bg"
-            aria-hidden="true"
-            draggable={false}
-          />
+      {/* Continuous full-bleed panorama: the three scenes stack with no
+          gaps, each one cross-fading into the next */}
+      <div className="timeline-scenes">
+        {EVENTS.map((ev, idx) => (
+          <article
+            className={`ev-scene${idx > 0 ? " ev-scene--overlap" : ""}${
+              idx === 0 ? " ev-scene--first" : ""
+            }${idx === EVENTS.length - 1 ? " ev-scene--last" : ""}`}
+            key={ev.id}
+          >
+            {/* Scene illustration filling the band. The SVG artwork is a
+                landscape strip centred in a square transparent canvas, so
+                it is oversized and centred to crop the empty margins away. */}
+            <img
+              src={ev.cardBg}
+              alt=""
+              className="ev-scene__bg"
+              aria-hidden="true"
+              draggable={false}
+            />
 
-          {/* Frosted glass panel */}
-          <div className="ev-card__glass">
-            <p className="ev-card__number">
-              {String(idx + 1).padStart(2, "0")}
-            </p>
+            {/* Frosted glass panel */}
+            <div className={`ev-scene__glass scroll-anim delay-${idx + 2}`}>
+              <p className="ev-card__number">
+                {String(idx + 1).padStart(2, "0")}
+              </p>
 
-            <h3 className="ev-card__name">{ev.name}</h3>
+              <h3 className="ev-card__name">{ev.name}</h3>
 
-            <p className="ev-card__datetime">
-              <span>{ev.date}</span>
-              <span className="ev-card__sep" aria-hidden="true">·</span>
-              <span>{ev.time}</span>
-            </p>
+              <p className="ev-card__datetime">
+                <span>{ev.date}</span>
+                <span className="ev-card__sep" aria-hidden="true">·</span>
+                <span>{ev.time}</span>
+              </p>
 
-            <p className="ev-card__venue">{ev.venue}</p>
+              <p className="ev-card__venue">{ev.venue}</p>
 
-            <a
-              href={ev.mapLink}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="ev-card__maplink"
-            >
-              Get Directions ↗
-            </a>
-          </div>
-        </article>
-      ))}
+              <a
+                href={ev.mapLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="ev-card__maplink"
+              >
+                Get Directions ↗
+              </a>
+            </div>
+          </article>
+        ))}
+      </div>
     </div>
   );
 }
