@@ -651,6 +651,11 @@ body {
   /* No side padding: the scene panorama bleeds to the card edges */
   padding: 20px 0 48px;
   position: relative;
+  /* Shared scene geometry — every band derives from these so all three
+     scenes render identically and stay centred at any viewport width */
+  --scene-w: min(100vw, 500px);
+  --scene-h: calc(var(--scene-w) * 0.86);
+  --scene-overlap: 100px;
 }
 
 /* Section header */
@@ -695,31 +700,43 @@ body {
   position: relative;
 }
 
-/* One full-bleed scene band per event */
+/* One full-bleed scene band per event. Every scene "owns" a band of
+   height --scene-h; the glass panel is flex-centred inside it. */
 .ev-scene {
   position: relative;
-  padding: 72px 30px;
+  min-height: var(--scene-h);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 28px 30px;
   text-align: center;
   overflow: hidden;
 }
 
-/* Consecutive scenes overlap and cross-fade into the previous one,
-   so junctions read as one continuous landscape */
+/* Consecutive scenes overlap the previous one by --scene-overlap and
+   cross-fade over it. The extra box height and matching padding-top keep
+   the owned band at exactly --scene-h with the glass centred in it. */
 .ev-scene--overlap {
-  margin-top: -100px;
-  padding-top: 172px;
+  margin-top: calc(-1 * var(--scene-overlap));
+  min-height: calc(var(--scene-h) + var(--scene-overlap));
+  padding-top: calc(28px + var(--scene-overlap));
 }
 
 /* Scene illustration. The artwork is a 768×429 landscape band vertically
-   centred in a square transparent canvas, so the image is oversized to
-   180% of the scene height: the band then exactly covers the scene and
-   the transparent margins crop away. */
+   centred in a square transparent canvas (canvas height = 1.79 × band
+   height). Every image gets the SAME rendered size — computed from the
+   shared scene geometry, not the individual box — so all three scenes
+   show identical zoom and crop. The max() fallback keeps coverage if a
+   scene ever grows beyond its design height on tiny screens. */
 .ev-scene__bg {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  height: 180%;
+  height: max(
+    calc((var(--scene-h) + var(--scene-overlap)) * 1.8),
+    182%
+  );
   width: auto;
   min-width: 100%;
   pointer-events: none;
@@ -727,29 +744,39 @@ body {
 }
 
 /* Soft edges: the first scene rises out of the parchment, each overlap
-   fades over the scene above, and the last melts back into parchment */
+   fades over the scene above, and the last melts back into parchment.
+   The fade length is 2 × the overlap, which places the perceived
+   junction exactly on the original stacking line between scenes. */
 .ev-scene--first .ev-scene__bg {
   -webkit-mask-image: linear-gradient(to bottom, transparent, black 90px);
   mask-image: linear-gradient(to bottom, transparent, black 90px);
 }
 
 .ev-scene--overlap .ev-scene__bg {
-  -webkit-mask-image: linear-gradient(to bottom, transparent, black 150px);
-  mask-image: linear-gradient(to bottom, transparent, black 150px);
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent,
+    black calc(var(--scene-overlap) * 2)
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    transparent,
+    black calc(var(--scene-overlap) * 2)
+  );
 }
 
 .ev-scene--overlap.ev-scene--last .ev-scene__bg {
   -webkit-mask-image: linear-gradient(
     to bottom,
     transparent,
-    black 150px,
+    black calc(var(--scene-overlap) * 2),
     black calc(100% - 90px),
     transparent
   );
   mask-image: linear-gradient(
     to bottom,
     transparent,
-    black 150px,
+    black calc(var(--scene-overlap) * 2),
     black calc(100% - 90px),
     transparent
   );
@@ -758,6 +785,7 @@ body {
 /* Frosted glass panel holding the event details */
 .ev-scene__glass {
   position: relative;
+  width: 100%;
   padding: 26px 18px 28px;
   border-radius: 12px;
   border: 1px solid rgba(212, 168, 67, 0.6);
