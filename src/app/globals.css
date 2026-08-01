@@ -715,12 +715,7 @@ body {
   align-items: flex-start;
   color: var(--maroon);
   pointer-events: none;
-  transition: opacity 0.45s ease;
   animation: calloutFloat 3.2s ease-in-out infinite;
-}
-
-.portrait-scratch__callout--hidden {
-  opacity: 0;
 }
 
 .portrait-scratch__callout-text {
@@ -730,6 +725,20 @@ body {
   white-space: nowrap;
   transform: rotate(-6deg);
   text-shadow: 0 2px 10px rgba(122, 31, 46, 0.18);
+  /* One-shot settle; replays when the text swaps to "The Couple"
+     (the span is remounted via a React key change) */
+  animation: calloutTextIn 0.6s ease both;
+}
+
+@keyframes calloutTextIn {
+  from {
+    opacity: 0;
+    transform: rotate(-6deg) translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: rotate(-6deg) translateY(0);
+  }
 }
 
 .portrait-scratch__callout-arrow {
@@ -1475,6 +1484,7 @@ body {
   .welcome-deco__mote,
   .footer-names-wrap::before,
   .portrait-scratch__callout,
+  .portrait-scratch__callout-text,
   .portrait-scratch--revealed .portrait-img--photo,
   .countdown__value {
     animation: none;

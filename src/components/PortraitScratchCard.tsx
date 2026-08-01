@@ -26,7 +26,6 @@ export default function PortraitScratchCard() {
   const strokeCount = useRef(0);
   const revealedRef = useRef(false);
 
-  const [hasStarted, setHasStarted] = useState(false);
   const [isRevealed, setIsRevealed] = useState(false);
 
   // Paint the scratch cover: paper gradient + gold specks + the caricature
@@ -162,10 +161,7 @@ export default function PortraitScratchCard() {
     e.currentTarget.setPointerCapture(e.pointerId);
     scratching.current = true;
     lastPoint.current = null;
-    if (!started.current) {
-      started.current = true;
-      setHasStarted(true);
-    }
+    started.current = true;
     scratchTo(getPos(e));
   };
 
@@ -218,15 +214,17 @@ export default function PortraitScratchCard() {
         />
       </div>
 
-      {/* Handwritten "Scratch this!" note with a curved arrow pointing
-          into the frame from outside its top-right corner */}
-      <div
-        className={`portrait-scratch__callout${
-          hasStarted || isRevealed ? " portrait-scratch__callout--hidden" : ""
-        }`}
-        aria-hidden="true"
-      >
-        <span className="portrait-scratch__callout-text">Scratch this!</span>
+      {/* Handwritten note with a curved arrow pointing into the frame from
+          outside its top-right corner. Stays put while scratching; once the
+          portrait is fully revealed the text becomes "The Couple". */}
+      <div className="portrait-scratch__callout" aria-hidden="true">
+        {/* key swap remounts the span so the settle animation replays */}
+        <span
+          className="portrait-scratch__callout-text"
+          key={isRevealed ? "revealed" : "scratch"}
+        >
+          {isRevealed ? "The Couple" : "Scratch this!"}
+        </span>
         <svg
           className="portrait-scratch__callout-arrow"
           viewBox="0 0 64 64"
