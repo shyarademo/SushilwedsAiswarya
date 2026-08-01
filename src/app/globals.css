@@ -1024,6 +1024,16 @@ body {
   margin: 0 4px;
 }
 
+/* Secondary line: the auspicious muhurtham window */
+.ev-card__note {
+  font-family: var(--font-caps), serif;
+  font-size: 0.64rem;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--maroon);
+  margin: -2px 0 10px;
+}
+
 /* Venue name */
 .ev-card__venue {
   font-family: var(--font-serif), serif;
