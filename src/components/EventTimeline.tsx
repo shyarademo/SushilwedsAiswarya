@@ -25,7 +25,7 @@ const EVENTS: WeddingEvent[] = [
     name: "Wedding",
     date: "September 13",
     time: "11:30 AM onwards",
-    note: "(September 13 · Muhurtham: 7:15 \u2013 8:00 AM)",
+    note: "(Muhurtham: 7:15AM \u2013 8:00AM @ Ernakulam Shiva Temple)",
     venue: "TDM Hall, Ernakulam, Kerala",
     mapLink:
       "https://www.google.com/maps/place/X79M%2B5HP+TDM+Hall,+Durbar+Hall+Rd,+opposite+Durbar+Hall+Ground,+Ernakulam+South,+Ernakulam,+Kerala+682016,+India/data=!4m2!3m1!1s0x3b0872b21e2ce8ef:0x4b0aa762fde2bb71!18m1!1e1?utm_source=mstt_1&entry=gps&coh=192189&g_ep=CAESBzI2LjI5LjIYACCenQoqlQEsOTQyNjc3MjcsOTQyOTIxOTUsOTQyOTk1MzIsMTAwNzk2NDk4LDEwMDc5Nzc2MSwxMDA3OTU2MjUsOTQyODA1NzYsOTQyMDczOTQsOTQyMDc1MDYsOTQyMDg1MDYsOTQyMTg2NTMsOTQyMjk4MzksOTQyNzUxNjgsOTQyNzk2MTksMTAwODE1NjQwLDEwMDgxMjk5NEICQUU%3D&skid=cc788467-737d-4881-9fe0-e446d4cac314&g_st=aw",
