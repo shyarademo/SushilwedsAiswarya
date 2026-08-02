@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import CountdownTimer from "@/components/CountdownTimer";
 import EventTimeline from "@/components/EventTimeline";
 import MusicPlayer from "@/components/MusicPlayer";
+import PetalShower from "@/components/PetalShower";
 import PortraitScratchCard from "@/components/PortraitScratchCard";
 import RsvpSection from "@/components/RsvpSection";
 import SideSelector from "@/components/SideSelector";
@@ -219,8 +220,8 @@ export default function HomePage() {
 
       </div>
 
-      {/* Ambient music + floating play/pause control */}
       <MusicPlayer />
+      <PetalShower />
     </>
   );
 }

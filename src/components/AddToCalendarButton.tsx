@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { burstPetals } from "@/lib/petalBurst";
 
 export interface CalendarEventInfo {
   /** Calendar entry title, e.g. "Sushil weds Aiswarya — Wedding" */
@@ -103,6 +104,7 @@ export default function AddToCalendarButton({
     // Give the browser time to start the download before revoking
     setTimeout(() => URL.revokeObjectURL(url), 10_000);
     setOpen(false);
+    burstPetals("soft");
   };
 
   return (
@@ -125,7 +127,10 @@ export default function AddToCalendarButton({
             href={googleCalendarUrl(event)}
             target="_blank"
             rel="noopener noreferrer"
-            onClick={() => setOpen(false)}
+            onClick={() => {
+              setOpen(false);
+              burstPetals("soft");
+            }}
           >
             Google Calendar
           </a>

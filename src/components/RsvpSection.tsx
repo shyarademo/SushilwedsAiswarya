@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { burstPetals } from "@/lib/petalBurst";
 
 type YesNo = "yes" | "no" | null;
 
@@ -25,6 +26,7 @@ export default function RsvpSection() {
     setTimeout(() => {
       setIsSubmitting(false);
       setIsSubmitted(true);
+      burstPetals("full");
     }, 1500);
   };
 

@@ -1,11 +1,18 @@
 "use client";
 
 import { useState } from "react";
+import { burstPetals } from "@/lib/petalBurst";
 
 type Side = "bride" | "groom" | null;
 
 export default function SideSelector() {
   const [side, setSide] = useState<Side>(null);
+
+  const pick = (next: Side) => {
+    if (!next || next === side) return;
+    setSide(next);
+    burstPetals("soft");
+  };
 
   return (
     <section className="side-section">
@@ -20,7 +27,7 @@ export default function SideSelector() {
           className={`side-card side-card--bride${
             side === "bride" ? " side-card--active" : ""
           }${side === "groom" ? " side-card--dimmed" : ""}`}
-          onClick={() => setSide("bride")}
+          onClick={() => pick("bride")}
           aria-pressed={side === "bride"}
         >
           <span className="side-card__glow" aria-hidden="true"></span>
@@ -40,7 +47,7 @@ export default function SideSelector() {
           className={`side-card side-card--groom${
             side === "groom" ? " side-card--active" : ""
           }${side === "bride" ? " side-card--dimmed" : ""}`}
-          onClick={() => setSide("groom")}
+          onClick={() => pick("groom")}
           aria-pressed={side === "groom"}
         >
           <span className="side-card__glow" aria-hidden="true"></span>

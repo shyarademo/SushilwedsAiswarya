@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { burstPetals } from "@/lib/petalBurst";
 
 const COVER_SRC = "/images/Aiswarya and Sushil Without BG Caricature.svg";
 const REVEAL_SRC = "/images/Aiswarya and Sushil Without BG.png";
@@ -92,6 +93,7 @@ export default function PortraitScratchCard() {
     if (revealedRef.current) return;
     revealedRef.current = true;
     setIsRevealed(true);
+    burstPetals("full");
   };
 
   const checkProgress = () => {

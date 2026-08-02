@@ -1,6 +1,9 @@
+"use client";
+
 import AddToCalendarButton, {
   type CalendarEventInfo,
 } from "@/components/AddToCalendarButton";
+import { burstPetals } from "@/lib/petalBurst";
 
 interface WeddingEvent {
   id: string;
@@ -110,6 +113,7 @@ export default function EventTimeline() {
                   target="_blank"
                   rel="noopener noreferrer"
                   className="ev-card__maplink"
+                  onClick={() => burstPetals("soft")}
                 >
                   Get Directions ↗
                 </a>
