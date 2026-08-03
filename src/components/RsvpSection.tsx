@@ -42,7 +42,7 @@ export default function RsvpSection() {
       {/* Parchment form card */}
       <div className="rsvp-container scroll-anim delay-2">
         <p className="rsvp-intro">
-          Your presence would be the greatest gift — we would be absolutely
+          Your presence would be the greatest gift. We would be absolutely
           delighted to have you join us as we begin this new journey together.
           Please let us know if you can celebrate with us!
         </p>

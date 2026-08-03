@@ -1763,6 +1763,405 @@ body {
 }
 
 /* ════════════════════════════════════════════════════════════════════
+   TEMPLE GATE INTRO — full-viewport Kerala doors + wax seal latch
+   Palette: parchment, gold, maroon, warm teak (matches invitation)
+════════════════════════════════════════════════════════════════════ */
+.gate {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: block;
+  overflow: hidden;
+  touch-action: none;
+  background: transparent;
+  transform: translateZ(0);
+}
+
+.gate__atmosphere {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 75% 55% at 50% 38%, rgba(253, 246, 232, 0.4), transparent 62%),
+    radial-gradient(ellipse 65% 45% at 50% 18%, rgba(212, 168, 67, 0.28), transparent 55%),
+    linear-gradient(165deg, #d4b896 0%, #b88960 30%, #8a3a48 68%, #5c1a28 100%);
+  opacity: 1;
+  transition: opacity 0.55s ease;
+}
+
+.gate--opening .gate__atmosphere {
+  opacity: 0;
+}
+
+.gate__frame {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  width: 100%;
+  height: 100%;
+  perspective: 1700px;
+  transform-style: preserve-3d;
+}
+
+.gate__door {
+  position: relative;
+  width: 50%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 1.25s cubic-bezier(0.4, 0.05, 0.2, 1);
+  will-change: transform;
+}
+
+.gate__door--left {
+  transform-origin: left center;
+  z-index: 2;
+}
+
+.gate__door--right {
+  transform-origin: right center;
+  z-index: 1;
+}
+
+.gate--opening .gate__door--left {
+  transform: rotateY(-88deg);
+}
+
+.gate--opening .gate__door--right {
+  transform: rotateY(88deg);
+}
+
+.gate--opening.gate--reduced {
+  animation: gateFadeOut 0.28s ease forwards;
+  pointer-events: none;
+}
+
+.gate--opening.gate--reduced .gate__door--left,
+.gate--opening.gate--reduced .gate__door--right {
+  transform: none;
+  transition: none;
+}
+
+@keyframes gateFadeOut {
+  to { opacity: 0; }
+}
+
+.gate__panel {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-evenly;
+  padding: clamp(28px, 6vh, 56px) clamp(18px, 4.5vw, 44px);
+  background:
+    linear-gradient(
+      118deg,
+      rgba(253, 246, 232, 0.32) 0%,
+      rgba(253, 246, 232, 0.06) 22%,
+      transparent 45%,
+      rgba(122, 31, 46, 0.1) 100%
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent 0,
+      transparent 14px,
+      rgba(122, 31, 46, 0.045) 14px,
+      rgba(122, 31, 46, 0.045) 15px
+    ),
+    linear-gradient(
+      180deg,
+      #d2b08a 0%,
+      #c49a6c 14%,
+      #b08658 36%,
+      #9a7348 62%,
+      #8a6240 82%,
+      #7a5338 100%
+    );
+  border: 0;
+  box-shadow:
+    inset 0 0 0 3px rgba(212, 168, 67, 0.72),
+    inset 0 0 0 6px rgba(122, 31, 46, 0.18),
+    inset 0 0 0 8px rgba(253, 246, 232, 0.2),
+    inset 0 0 60px rgba(122, 31, 46, 0.1);
+}
+
+.gate__door--left .gate__panel {
+  border-right: 1px solid rgba(212, 168, 67, 0.5);
+}
+
+.gate__door--right .gate__panel {
+  border-left: 1px solid rgba(212, 168, 67, 0.5);
+}
+
+/* Gilded top/bottom rails */
+.gate__edge {
+  position: absolute;
+  left: 10%;
+  right: 10%;
+  height: 3px;
+  border-radius: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--gold-dark) 12%,
+    var(--gold-light) 50%,
+    var(--gold-dark) 88%,
+    transparent
+  );
+  box-shadow: 0 0 8px rgba(212, 168, 67, 0.35);
+  pointer-events: none;
+}
+
+.gate__edge--top { top: 4.5%; }
+.gate__edge--bottom { bottom: 4.5%; }
+
+.gate__inset {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  flex: 1 1 0;
+  max-height: 36%;
+  border-radius: 6px;
+  border: 1.5px solid rgba(212, 168, 67, 0.65);
+  background:
+    radial-gradient(ellipse at 50% 30%, rgba(253, 246, 232, 0.28), transparent 55%),
+    linear-gradient(165deg, rgba(212, 168, 67, 0.14), rgba(122, 31, 46, 0.1));
+  box-shadow:
+    inset 0 0 0 5px rgba(154, 115, 76, 0.45),
+    inset 0 1px 0 rgba(253, 246, 232, 0.35),
+    inset 0 -8px 20px rgba(74, 21, 32, 0.12),
+    0 0 0 1px rgba(253, 246, 232, 0.15);
+}
+
+.gate__inset--lower {
+  max-height: 32%;
+}
+
+.gate__inset-inner {
+  display: block;
+  width: 78%;
+  height: 72%;
+  border-radius: 4px;
+  border: 1px solid rgba(212, 168, 67, 0.4);
+  box-shadow:
+    inset 0 0 18px rgba(122, 31, 46, 0.08),
+    0 0 0 3px rgba(154, 115, 76, 0.25);
+  background: linear-gradient(
+    160deg,
+    rgba(253, 246, 232, 0.12),
+    rgba(122, 31, 46, 0.06)
+  );
+}
+
+/* Small gold diamond between panels */
+.gate__rosette {
+  width: 9px;
+  height: 9px;
+  margin: 2% 0;
+  rotate: 45deg;
+  background: linear-gradient(135deg, var(--gold-light), var(--gold-dark));
+  box-shadow:
+    0 0 0 2px rgba(122, 31, 46, 0.2),
+    0 0 10px rgba(212, 168, 67, 0.45);
+}
+
+/* Latch cluster: seal + cue, centered on the door seam */
+.gate__latch {
+  position: absolute;
+  top: 50%;
+  right: 0;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transform: translate(50%, -50%);
+  width: clamp(120px, 28vw, 150px);
+}
+
+.gate__seal {
+  position: relative;
+  width: clamp(100px, 24vw, 132px);
+  height: clamp(100px, 24vw, 132px);
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transform: rotate(-3.5deg);
+}
+
+.gate__seal:disabled {
+  cursor: default;
+}
+
+.gate__seal-ring {
+  position: absolute;
+  inset: -7%;
+  border-radius: 50%;
+  border: 1.5px solid rgba(212, 168, 67, 0.55);
+  box-shadow:
+    0 0 0 4px rgba(122, 31, 46, 0.12),
+    inset 0 0 0 1px rgba(253, 246, 232, 0.25);
+  pointer-events: none;
+}
+
+.gate__seal-wax {
+  position: absolute;
+  inset: 0;
+  border-radius: 47% 53% 50% 50% / 52% 48% 52% 48%;
+  background:
+    radial-gradient(circle at 30% 26%, rgba(253, 246, 232, 0.4), transparent 40%),
+    radial-gradient(circle at 72% 74%, rgba(45, 10, 16, 0.42), transparent 48%),
+    radial-gradient(
+      circle at 50% 46%,
+      var(--maroon-light) 0%,
+      var(--seal-red) 48%,
+      var(--maroon) 100%
+    );
+  box-shadow:
+    0 0 0 2px rgba(212, 168, 67, 0.7),
+    0 0 0 6px rgba(122, 31, 46, 0.28),
+    0 12px 26px rgba(45, 26, 16, 0.4),
+    inset 0 2px 8px rgba(253, 246, 232, 0.32),
+    inset 0 -8px 16px rgba(45, 10, 16, 0.42);
+  animation: sealPulse 2.6s ease-in-out infinite;
+}
+
+.gate__seal:focus-visible .gate__seal-wax {
+  outline: 2px solid var(--gold-light);
+  outline-offset: 6px;
+}
+
+.gate__monogram {
+  position: absolute;
+  inset: 17%;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.02em;
+  font-family: var(--font-script), cursive;
+  line-height: 1;
+  color: var(--beige);
+  text-shadow:
+    0 1px 0 rgba(74, 21, 32, 0.5),
+    0 2px 10px rgba(0, 0, 0, 0.22);
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.gate__mono-letter {
+  font-size: clamp(1.85rem, 6.8vw, 2.85rem);
+  padding: 0.08em 0.02em;
+}
+
+.gate__mono-amp {
+  font-size: clamp(1.15rem, 4.2vw, 1.7rem);
+  opacity: 0.92;
+  margin: 0 0.02em;
+  transform: translateY(0.06em);
+}
+
+/* High-contrast cue on a parchment chip, directly under the seal */
+.gate__cue {
+  position: relative;
+  z-index: 2;
+  margin: 14px 0 0;
+  padding: 7px 14px 6px;
+  max-width: 100%;
+  font-family: var(--font-caps), serif;
+  font-size: clamp(0.62rem, 2.5vw, 0.74rem);
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-indent: 0.22em;
+  text-transform: uppercase;
+  color: var(--maroon);
+  background: linear-gradient(
+    180deg,
+    var(--beige) 0%,
+    var(--beige-deep) 100%
+  );
+  border: 1px solid rgba(212, 168, 67, 0.75);
+  border-radius: 999px;
+  box-shadow:
+    0 4px 14px rgba(45, 26, 16, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.65);
+  text-align: center;
+  white-space: nowrap;
+  pointer-events: none;
+  animation: cueBreathe 2.6s ease-in-out infinite;
+}
+
+.gate--opening .gate__cue {
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  animation: none;
+}
+
+@keyframes sealPulse {
+  0%,
+  100% {
+    transform: scale(1);
+    box-shadow:
+      0 0 0 2px rgba(212, 168, 67, 0.7),
+      0 0 0 6px rgba(122, 31, 46, 0.28),
+      0 12px 26px rgba(45, 26, 16, 0.4),
+      inset 0 2px 8px rgba(253, 246, 232, 0.32),
+      inset 0 -8px 16px rgba(45, 10, 16, 0.42),
+      0 0 20px rgba(212, 168, 67, 0.28);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow:
+      0 0 0 2px rgba(234, 201, 106, 0.9),
+      0 0 0 7px rgba(122, 31, 46, 0.22),
+      0 14px 30px rgba(45, 26, 16, 0.45),
+      inset 0 2px 8px rgba(253, 246, 232, 0.4),
+      inset 0 -8px 16px rgba(45, 10, 16, 0.42),
+      0 0 34px rgba(212, 168, 67, 0.5);
+  }
+}
+
+@keyframes cueBreathe {
+  0%,
+  100% {
+    transform: translateY(0);
+    box-shadow:
+      0 4px 14px rgba(45, 26, 16, 0.28),
+      inset 0 1px 0 rgba(255, 255, 255, 0.65);
+  }
+  50% {
+    transform: translateY(-2px);
+    box-shadow:
+      0 6px 18px rgba(45, 26, 16, 0.34),
+      inset 0 1px 0 rgba(255, 255, 255, 0.7),
+      0 0 16px rgba(212, 168, 67, 0.25);
+  }
+}
+
+.gate--opening .gate__seal-wax {
+  animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gate__seal-wax,
+  .gate__cue {
+    animation: none;
+  }
+
+  .gate__door {
+    transition: none;
+  }
+
+  .gate__atmosphere {
+    transition: none;
+  }
+}
+/* ════════════════════════════════════════════════════════════════════
    PETAL SHOWER — fixed full-viewport overlay (non-interactive)
 ════════════════════════════════════════════════════════════════════ */
 .petal-shower {

@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import CountdownTimer from "@/components/CountdownTimer";
 import EventTimeline from "@/components/EventTimeline";
+import Gate from "@/components/Gate";
 import MusicPlayer from "@/components/MusicPlayer";
 import PetalShower from "@/components/PetalShower";
 import PortraitScratchCard from "@/components/PortraitScratchCard";
@@ -10,6 +11,26 @@ import RsvpSection from "@/components/RsvpSection";
 import SideSelector from "@/components/SideSelector";
 
 export default function HomePage() {
+  const [showGate, setShowGate] = useState(true);
+  const [inviteUnlocked, setInviteUnlocked] = useState(false);
+
+  // Scroll lock while the temple gate is closed
+  useEffect(() => {
+    if (inviteUnlocked) return;
+
+    const html = document.documentElement;
+    const body = document.body;
+    const prevHtml = html.style.overflow;
+    const prevBody = body.style.overflow;
+    html.style.overflow = "hidden";
+    body.style.overflow = "hidden";
+
+    return () => {
+      html.style.overflow = prevHtml;
+      body.style.overflow = prevBody;
+    };
+  }, [inviteUnlocked]);
+
   useEffect(() => {
     // Subtle scroll parallax on the welcome text block.
     // Perf-critical: batch writes into requestAnimationFrame (scroll events
@@ -66,9 +87,32 @@ export default function HomePage() {
     };
   }, []);
 
+  const handleOpenStart = useCallback(() => {
+    setInviteUnlocked(true);
+    // Return focus toward the invitation once interaction begins
+    requestAnimationFrame(() => {
+      const hero = document.querySelector(".hero-section");
+      if (hero instanceof HTMLElement) {
+        hero.setAttribute("tabindex", "-1");
+        hero.focus({ preventScroll: true });
+      }
+    });
+  }, []);
+
+  const handleGateExited = useCallback(() => {
+    setShowGate(false);
+  }, []);
+
   return (
     <>
-      <div className="wrap">
+      {showGate && (
+        <Gate onOpenStart={handleOpenStart} onExited={handleGateExited} />
+      )}
+
+      <div
+        className="wrap"
+        aria-hidden={showGate && !inviteUnlocked ? true : undefined}
+      >
 
         {/* ── Hero (DO NOT MODIFY) ── */}
         <div className="hero-section">
@@ -221,7 +265,7 @@ export default function HomePage() {
       </div>
 
       <MusicPlayer />
-      <PetalShower />
+      {inviteUnlocked && <PetalShower />}
     </>
   );
 }
