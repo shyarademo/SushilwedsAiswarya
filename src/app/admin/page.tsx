@@ -85,50 +85,30 @@ function normalizePhone(phone: string | null): string {
   return phone.replace(/[^\d+]/g, "");
 }
 
+/** Digits only for WhatsApp; 10-digit local numbers get India country code. */
+function whatsappDigits(phone: string | null): string | null {
+  if (!phone) return null;
+  let digits = phone.replace(/\D/g, "");
+  if (!digits) return null;
+  if (digits.length === 10) digits = `91${digits}`;
+  return digits;
+}
+
 function telHref(phone: string | null): string | null {
   const cleaned = normalizePhone(phone);
   if (!cleaned) return null;
   return `tel:${cleaned}`;
 }
 
-function rowToClipboard(row: RsvpRow): string {
-  return [
-    `Name: ${row.full_name}`,
-    `Side: ${labelSide(row.side)}`,
-    `RSVP: ${labelYesNo(row.attendance)}`,
-    `Wedding: ${labelYesNo(row.attend_wedding)}`,
-    `Reception: ${labelYesNo(row.attend_reception)}`,
-    `Phone: ${row.phone || "—"}`,
-    `Message: ${row.message || "—"}`,
-    `Time: ${formatTime(row.created_at)}`,
-  ].join("\n");
+function whatsappHref(phone: string | null): string | null {
+  const digits = whatsappDigits(phone);
+  if (!digits) return null;
+  return `https://wa.me/${digits}`;
 }
 
 function sortValue(row: RsvpRow, key: SortKey): string {
   const raw = row[key];
   return (raw ?? "").toString().toLowerCase();
-}
-
-async function copyText(text: string): Promise<boolean> {
-  try {
-    await navigator.clipboard.writeText(text);
-    return true;
-  } catch {
-    try {
-      const ta = document.createElement("textarea");
-      ta.value = text;
-      ta.setAttribute("readonly", "");
-      ta.style.position = "fixed";
-      ta.style.left = "-9999px";
-      document.body.appendChild(ta);
-      ta.select();
-      const ok = document.execCommand("copy");
-      ta.remove();
-      return ok;
-    } catch {
-      return false;
-    }
-  }
 }
 
 function MessageCell({
@@ -187,12 +167,22 @@ export default function AdminPage() {
   const [expandedMsgs, setExpandedMsgs] = useState<Record<number, boolean>>(
     {}
   );
+  const [phoneSheet, setPhoneSheet] = useState<{
+    name: string;
+    phone: string;
+  } | null>(null);
 
   const clearAuth = useCallback(() => {
     writeSessionPassword(null);
     setRows([]);
     setPassword("");
+    setError(null);
+    setPhoneSheet(null);
   }, []);
+
+  const handleLogout = () => {
+    clearAuth();
+  };
 
   useEffect(() => {
     if (!toast) return;
@@ -255,10 +245,11 @@ export default function AdminPage() {
     }
   };
 
-  const showCopied = async (label: string, text: string) => {
-    const ok = await copyText(text);
-    setToast(ok ? `${label} copied` : "Could not copy — try selecting the text");
+  const openPhoneSheet = (name: string, phone: string) => {
+    setPhoneSheet({ name, phone });
   };
+
+  const closePhoneSheet = () => setPhoneSheet(null);
 
   const toggleSort = (key: SortKey) => {
     if (sortKey === key) {
@@ -405,9 +396,9 @@ export default function AdminPage() {
           <button
             type="button"
             className="admin-btn admin-btn--ghost"
-            onClick={clearAuth}
+            onClick={handleLogout}
           >
-            Lock
+            Log Out
           </button>
         </div>
       </header>
@@ -526,15 +517,12 @@ export default function AdminPage() {
               <th scope="col" aria-sort={ariaSortFor("created_at")}>
                 {sortLabel("created_at", "Time")}
               </th>
-              <th scope="col" className="admin-th-actions">
-                <span className="admin-th-static">Actions</span>
-              </th>
             </tr>
           </thead>
           <tbody>
             {filtered.length === 0 ? (
               <tr>
-                <td colSpan={9} className="admin-empty">
+                <td colSpan={8} className="admin-empty">
                   {loading
                     ? "Loading…"
                     : filtersActive
@@ -544,7 +532,7 @@ export default function AdminPage() {
               </tr>
             ) : (
               filtered.map((row) => {
-                const phoneLink = telHref(row.phone);
+                const canContact = Boolean(normalizePhone(row.phone));
                 return (
                   <tr key={row.id}>
                     <td className="admin-name">{row.full_name}</td>
@@ -565,10 +553,16 @@ export default function AdminPage() {
                     <td>{labelYesNo(row.attend_wedding)}</td>
                     <td>{labelYesNo(row.attend_reception)}</td>
                     <td className="admin-phone">
-                      {phoneLink ? (
-                        <a className="admin-tel" href={phoneLink}>
+                      {canContact && row.phone ? (
+                        <button
+                          type="button"
+                          className="admin-tel"
+                          onClick={() =>
+                            openPhoneSheet(row.full_name, row.phone || "")
+                          }
+                        >
                           {row.phone}
-                        </a>
+                        </button>
                       ) : (
                         <span className="admin-muted">—</span>
                       )}
@@ -586,28 +580,6 @@ export default function AdminPage() {
                       />
                     </td>
                     <td className="admin-time">{formatTime(row.created_at)}</td>
-                    <td className="admin-row-actions">
-                      {row.phone && (
-                        <button
-                          type="button"
-                          className="admin-link-btn"
-                          onClick={() =>
-                            void showCopied("Phone", row.phone || "")
-                          }
-                        >
-                          Copy phone
-                        </button>
-                      )}
-                      <button
-                        type="button"
-                        className="admin-link-btn"
-                        onClick={() =>
-                          void showCopied("Guest details", rowToClipboard(row))
-                        }
-                      >
-                        Copy row
-                      </button>
-                    </td>
                   </tr>
                 );
               })
@@ -615,6 +587,53 @@ export default function AdminPage() {
           </tbody>
         </table>
       </div>
+
+      {phoneSheet && (
+        <div
+          className="admin-sheet-backdrop"
+          role="presentation"
+          onClick={closePhoneSheet}
+        >
+          <div
+            className="admin-sheet"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="admin-phone-sheet-title"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <p className="admin-sheet__eyebrow">Contact guest</p>
+            <h2 id="admin-phone-sheet-title" className="admin-sheet__title">
+              {phoneSheet.name}
+            </h2>
+            <p className="admin-sheet__number">{phoneSheet.phone}</p>
+            <div className="admin-sheet__actions">
+              <a
+                className="admin-btn admin-sheet__btn"
+                href={telHref(phoneSheet.phone) || "#"}
+                onClick={closePhoneSheet}
+              >
+                Call
+              </a>
+              <a
+                className="admin-btn admin-btn--ghost admin-sheet__btn"
+                href={whatsappHref(phoneSheet.phone) || "#"}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={closePhoneSheet}
+              >
+                WhatsApp
+              </a>
+              <button
+                type="button"
+                className="admin-link-btn admin-sheet__cancel"
+                onClick={closePhoneSheet}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {toast && (
         <div className="admin-toast" role="status">
