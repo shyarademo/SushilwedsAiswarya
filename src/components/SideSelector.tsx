@@ -1,15 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useGuestPrefs } from "@/components/GuestPrefsContext";
 import { burstPetals } from "@/lib/petalBurst";
-
-type Side = "bride" | "groom" | null;
+import type { GuestSide } from "@/lib/rsvpApi";
 
 export default function SideSelector() {
-  const [side, setSide] = useState<Side>(null);
+  const { side, setSide } = useGuestPrefs();
 
-  const pick = (next: Side) => {
-    if (!next || next === side) return;
+  const pick = (next: GuestSide) => {
+    if (next === side) return;
     setSide(next);
     burstPetals("soft");
   };

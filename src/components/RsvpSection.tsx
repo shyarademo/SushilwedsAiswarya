@@ -1,45 +1,78 @@
 "use client";
 
 import { useState } from "react";
+import { useGuestPrefs } from "@/components/GuestPrefsContext";
 import { burstPetals } from "@/lib/petalBurst";
+import { submitRsvp, type YesNo } from "@/lib/rsvpApi";
 
-type YesNo = "yes" | "no" | null;
+type YesNoNull = YesNo | null;
 
 export default function RsvpSection() {
+  const { side } = useGuestPrefs();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [attendance, setAttendance] = useState<YesNo>(null);
-  const [attendWedding, setAttendWedding] = useState<YesNo>(null);
-  const [attendReception, setAttendReception] = useState<YesNo>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [attendance, setAttendance] = useState<YesNoNull>(null);
+  const [attendWedding, setAttendWedding] = useState<YesNoNull>(null);
+  const [attendReception, setAttendReception] = useState<YesNoNull>(null);
+  const [fullName, setFullName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [message, setMessage] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
+
+    if (!side) {
+      setError(
+        "Please choose Bride's side or Groom's side above before sending your RSVP."
+      );
+      return;
+    }
     if (!attendance) {
-      alert("Please let us know if you will be attending.");
+      setError("Please let us know if you will be attending.");
       return;
     }
     if (attendance === "yes" && (!attendWedding || !attendReception)) {
-      alert("Please tell us which celebrations you will be attending.");
+      setError("Please tell us which celebrations you will be attending.");
       return;
     }
+
+    const name = fullName.trim();
+    if (!name) {
+      setError("Please enter your full name.");
+      return;
+    }
+
     setIsSubmitting(true);
-    setTimeout(() => {
-      setIsSubmitting(false);
+    try {
+      await submitRsvp({
+        full_name: name,
+        phone: phone.trim() || undefined,
+        attendance,
+        attend_wedding: attendance === "yes" ? attendWedding : null,
+        attend_reception: attendance === "yes" ? attendReception : null,
+        side,
+        message: message.trim() || undefined,
+      });
       setIsSubmitted(true);
       burstPetals("full");
-    }, 1500);
+    } catch (err) {
+      const msg =
+        err instanceof Error ? err.message : "Something went wrong. Please try again.";
+      setError(msg);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
     <section className="rsvp-section">
-
-      {/* Section header */}
       <div className="rsvp-header scroll-anim delay-1">
         <p className="rsvp-eyebrow">Your Gracious Reply</p>
         <h2 className="rsvp-heading">RSVP</h2>
       </div>
 
-      {/* Parchment form card */}
       <div className="rsvp-container scroll-anim delay-2">
         <p className="rsvp-intro">
           Your presence would be the greatest gift. We would be absolutely
@@ -62,14 +95,22 @@ export default function RsvpSection() {
               <button
                 type="button"
                 className={`toggle-btn ${attendance === "yes" ? "active" : ""}`}
-                onClick={() => setAttendance("yes")}
+                onClick={() => {
+                  setAttendance("yes");
+                  setError(null);
+                }}
               >
                 Joyfully Accept
               </button>
               <button
                 type="button"
                 className={`toggle-btn decline ${attendance === "no" ? "active" : ""}`}
-                onClick={() => setAttendance("no")}
+                onClick={() => {
+                  setAttendance("no");
+                  setAttendWedding(null);
+                  setAttendReception(null);
+                  setError(null);
+                }}
               >
                 Regretfully Decline
               </button>
@@ -137,6 +178,9 @@ export default function RsvpSection() {
                 required
                 placeholder=" "
                 id="guestName"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                autoComplete="name"
               />
               <label htmlFor="guestName">Your Full Name</label>
             </div>
@@ -146,6 +190,9 @@ export default function RsvpSection() {
                 type="tel"
                 placeholder=" "
                 id="guestPhone"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                autoComplete="tel"
               />
               <label htmlFor="guestPhone">Phone Number (Optional)</label>
             </div>
@@ -155,11 +202,26 @@ export default function RsvpSection() {
                 rows={3}
                 placeholder=" "
                 id="guestMessage"
-              ></textarea>
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+              />
               <label htmlFor="guestMessage">
                 A message for the couple...
               </label>
             </div>
+
+            {error && (
+              <p className="rsvp-error" role="alert">
+                {error}
+              </p>
+            )}
+
+            {!side && (
+              <p className="rsvp-side-hint">
+                Tip: pick Bride&apos;s or Groom&apos;s side in the section above —
+                we need that with your RSVP.
+              </p>
+            )}
 
             <button
               type="submit"

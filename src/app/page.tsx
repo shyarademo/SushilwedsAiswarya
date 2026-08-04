@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import CountdownTimer from "@/components/CountdownTimer";
 import EventTimeline from "@/components/EventTimeline";
 import Gate from "@/components/Gate";
+import { GuestPrefsProvider } from "@/components/GuestPrefsContext";
 import MusicPlayer from "@/components/MusicPlayer";
 import PetalShower from "@/components/PetalShower";
 import PortraitScratchCard from "@/components/PortraitScratchCard";
@@ -222,18 +223,20 @@ export default function HomePage() {
           <span className="section-ornament__line section-ornament__line--right"></span>
         </div>
 
-        {/* ── Bride side / Groom side ── */}
-        <SideSelector />
+        <GuestPrefsProvider>
+          {/* ── Bride side / Groom side ── */}
+          <SideSelector />
 
-        {/* ── Ornamental divider ── */}
-        <div className="section-ornament" aria-hidden="true">
-          <span className="section-ornament__line section-ornament__line--left"></span>
-          <span className="section-ornament__diamond"></span>
-          <span className="section-ornament__line section-ornament__line--right"></span>
-        </div>
+          {/* ── Ornamental divider ── */}
+          <div className="section-ornament" aria-hidden="true">
+            <span className="section-ornament__line section-ornament__line--left"></span>
+            <span className="section-ornament__diamond"></span>
+            <span className="section-ornament__line section-ornament__line--right"></span>
+          </div>
 
-        {/* ── RSVP ── */}
-        <RsvpSection />
+          {/* ── RSVP ── */}
+          <RsvpSection />
+        </GuestPrefsProvider>
 
         {/* ── Footer ── */}
         <footer className="footer-section">
