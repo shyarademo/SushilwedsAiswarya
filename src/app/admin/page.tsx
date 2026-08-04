@@ -10,9 +10,20 @@ import {
 } from "@/lib/rsvpApi";
 
 const ADMIN_SESSION_KEY = "wedding_admin_unlocked";
+const MESSAGE_COLLAPSE_CHARS = 120;
 
 type AttendanceFilter = "all" | "yes" | "no";
 type SideFilter = "all" | "bride" | "groom";
+type SortKey =
+  | "full_name"
+  | "side"
+  | "attendance"
+  | "attend_wedding"
+  | "attend_reception"
+  | "phone"
+  | "message"
+  | "created_at";
+type SortDir = "asc" | "desc";
 
 const sessionListeners = new Set<() => void>();
 
@@ -62,6 +73,97 @@ function labelYesNo(value: string | null): string {
   return value;
 }
 
+function labelSide(value: string | null): string {
+  if (!value) return "—";
+  if (value === "bride") return "Bride";
+  if (value === "groom") return "Groom";
+  return value;
+}
+
+function normalizePhone(phone: string | null): string {
+  if (!phone) return "";
+  return phone.replace(/[^\d+]/g, "");
+}
+
+function telHref(phone: string | null): string | null {
+  const cleaned = normalizePhone(phone);
+  if (!cleaned) return null;
+  return `tel:${cleaned}`;
+}
+
+function rowToClipboard(row: RsvpRow): string {
+  return [
+    `Name: ${row.full_name}`,
+    `Side: ${labelSide(row.side)}`,
+    `RSVP: ${labelYesNo(row.attendance)}`,
+    `Wedding: ${labelYesNo(row.attend_wedding)}`,
+    `Reception: ${labelYesNo(row.attend_reception)}`,
+    `Phone: ${row.phone || "—"}`,
+    `Message: ${row.message || "—"}`,
+    `Time: ${formatTime(row.created_at)}`,
+  ].join("\n");
+}
+
+function sortValue(row: RsvpRow, key: SortKey): string {
+  const raw = row[key];
+  return (raw ?? "").toString().toLowerCase();
+}
+
+async function copyText(text: string): Promise<boolean> {
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch {
+    try {
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      ta.setAttribute("readonly", "");
+      ta.style.position = "fixed";
+      ta.style.left = "-9999px";
+      document.body.appendChild(ta);
+      ta.select();
+      const ok = document.execCommand("copy");
+      ta.remove();
+      return ok;
+    } catch {
+      return false;
+    }
+  }
+}
+
+function MessageCell({
+  message,
+  expanded,
+  onToggle,
+}: {
+  message: string | null;
+  expanded: boolean;
+  onToggle: () => void;
+}) {
+  if (!message) {
+    return <span className="admin-muted">—</span>;
+  }
+
+  const normalized = message.replace(/\r\n/g, "\n").trim();
+  const needsCollapse = normalized.length > MESSAGE_COLLAPSE_CHARS;
+
+  return (
+    <div className={`admin-msg${expanded ? " admin-msg--open" : ""}`}>
+      <p className="admin-msg__text">{normalized}</p>
+      {needsCollapse && (
+        <button
+          type="button"
+          className="admin-link-btn"
+          onClick={onToggle}
+          aria-expanded={expanded}
+        >
+          {expanded ? "Show less" : "Show more"}
+        </button>
+      )}
+    </div>
+  );
+}
+
 export default function AdminPage() {
   const storedPassword = useSyncExternalStore(
     subscribeSession,
@@ -74,11 +176,17 @@ export default function AdminPage() {
   const [rows, setRows] = useState<RsvpRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [toast, setToast] = useState<string | null>(null);
   const [attendanceFilter, setAttendanceFilter] =
     useState<AttendanceFilter>("all");
   const [sideFilter, setSideFilter] = useState<SideFilter>("all");
   const [search, setSearch] = useState("");
   const [loadTick, setLoadTick] = useState(0);
+  const [sortKey, setSortKey] = useState<SortKey>("created_at");
+  const [sortDir, setSortDir] = useState<SortDir>("desc");
+  const [expandedMsgs, setExpandedMsgs] = useState<Record<number, boolean>>(
+    {}
+  );
 
   const clearAuth = useCallback(() => {
     writeSessionPassword(null);
@@ -87,12 +195,17 @@ export default function AdminPage() {
   }, []);
 
   useEffect(() => {
+    if (!toast) return;
+    const id = window.setTimeout(() => setToast(null), 2200);
+    return () => window.clearTimeout(id);
+  }, [toast]);
+
+  useEffect(() => {
     if (!storedPassword) return;
 
     let cancelled = false;
 
     void (async () => {
-      // Defer setState so this effect is not a synchronous cascading render.
       await Promise.resolve();
       if (cancelled) return;
       setLoading(true);
@@ -131,36 +244,100 @@ export default function AdminPage() {
     }
   };
 
-  const handleLogout = () => {
-    clearAuth();
-  };
-
   const handleCsv = async () => {
     if (!storedPassword) return;
     setError(null);
     try {
       await downloadRsvpsCsv(storedPassword);
+      setToast("CSV download started");
     } catch (err) {
       setError(adminErrorMessage(err, "csv"));
     }
   };
 
+  const showCopied = async (label: string, text: string) => {
+    const ok = await copyText(text);
+    setToast(ok ? `${label} copied` : "Could not copy — try selecting the text");
+  };
+
+  const toggleSort = (key: SortKey) => {
+    if (sortKey === key) {
+      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    } else {
+      setSortKey(key);
+      setSortDir(key === "created_at" ? "desc" : "asc");
+    }
+  };
+
+  const clearFilters = () => {
+    setSearch("");
+    setAttendanceFilter("all");
+    setSideFilter("all");
+  };
+
+  const filtersActive =
+    search.trim() !== "" ||
+    attendanceFilter !== "all" ||
+    sideFilter !== "all";
+
   const q = search.trim().toLowerCase();
-  const filtered = rows.filter((row) => {
-    if (attendanceFilter !== "all" && row.attendance !== attendanceFilter) {
-      return false;
-    }
-    if (sideFilter !== "all" && row.side !== sideFilter) {
-      return false;
-    }
-    if (q && !row.full_name.toLowerCase().includes(q)) {
-      return false;
-    }
-    return true;
-  });
+  const filtered = rows
+    .filter((row) => {
+      if (attendanceFilter !== "all" && row.attendance !== attendanceFilter) {
+        return false;
+      }
+      if (sideFilter !== "all" && row.side !== sideFilter) {
+        return false;
+      }
+      if (q) {
+        const hay = [
+          row.full_name,
+          row.phone ?? "",
+          row.message ?? "",
+          row.side ?? "",
+        ]
+          .join(" ")
+          .toLowerCase();
+        if (!hay.includes(q)) return false;
+      }
+      return true;
+    })
+    .slice()
+    .sort((a, b) => {
+      const av = sortValue(a, sortKey);
+      const bv = sortValue(b, sortKey);
+      if (av < bv) return sortDir === "asc" ? -1 : 1;
+      if (av > bv) return sortDir === "asc" ? 1 : -1;
+      return b.id - a.id;
+    });
 
   const yesCount = rows.filter((r) => r.attendance === "yes").length;
   const noCount = rows.filter((r) => r.attendance === "no").length;
+  const brideCount = rows.filter((r) => r.side === "bride").length;
+  const groomCount = rows.filter((r) => r.side === "groom").length;
+  const weddingYes = rows.filter((r) => r.attend_wedding === "yes").length;
+  const receptionYes = rows.filter((r) => r.attend_reception === "yes").length;
+
+  const sortLabel = (key: SortKey, label: string) => {
+    const active = sortKey === key;
+    return (
+      <button
+        type="button"
+        className={`admin-th-btn${active ? " admin-th-btn--active" : ""}`}
+        onClick={() => toggleSort(key)}
+      >
+        {label}
+        <span className="admin-th-btn__arrow" aria-hidden="true">
+          {active ? (sortDir === "asc" ? " ↑" : " ↓") : ""}
+        </span>
+      </button>
+    );
+  };
+
+  const ariaSortFor = (key: SortKey): "ascending" | "descending" | "none" => {
+    if (sortKey !== key) return "none";
+    return sortDir === "asc" ? "ascending" : "descending";
+  };
 
   if (!unlocked) {
     return (
@@ -203,7 +380,7 @@ export default function AdminPage() {
           <p className="admin-gate__eyebrow">Sushil &amp; Aiswarya</p>
           <h1 className="admin-title">RSVP responses</h1>
           <p className="admin-meta">
-            {rows.length} total · {yesCount} attending · {noCount} declined
+            {rows.length} total
             {filtered.length !== rows.length
               ? ` · showing ${filtered.length}`
               : ""}
@@ -228,12 +405,39 @@ export default function AdminPage() {
           <button
             type="button"
             className="admin-btn admin-btn--ghost"
-            onClick={handleLogout}
+            onClick={clearAuth}
           >
             Lock
           </button>
         </div>
       </header>
+
+      <div className="admin-stats" aria-label="Response summary">
+        <div className="admin-stat">
+          <span className="admin-stat__value">{yesCount}</span>
+          <span className="admin-stat__label">Attending</span>
+        </div>
+        <div className="admin-stat">
+          <span className="admin-stat__value">{noCount}</span>
+          <span className="admin-stat__label">Declined</span>
+        </div>
+        <div className="admin-stat">
+          <span className="admin-stat__value">{brideCount}</span>
+          <span className="admin-stat__label">Bride&apos;s side</span>
+        </div>
+        <div className="admin-stat">
+          <span className="admin-stat__value">{groomCount}</span>
+          <span className="admin-stat__label">Groom&apos;s side</span>
+        </div>
+        <div className="admin-stat">
+          <span className="admin-stat__value">{weddingYes}</span>
+          <span className="admin-stat__label">Wedding</span>
+        </div>
+        <div className="admin-stat">
+          <span className="admin-stat__value">{receptionYes}</span>
+          <span className="admin-stat__label">Reception</span>
+        </div>
+      </div>
 
       {error && (
         <p className="admin-error admin-error--banner" role="alert">
@@ -242,12 +446,12 @@ export default function AdminPage() {
       )}
 
       <div className="admin-filters">
-        <label className="admin-filter">
+        <label className="admin-filter admin-filter--search">
           <span>Search</span>
           <input
             type="search"
             className="admin-input"
-            placeholder="Name…"
+            placeholder="Name, phone, or message…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
@@ -278,46 +482,145 @@ export default function AdminPage() {
             <option value="groom">Groom</option>
           </select>
         </label>
+        {filtersActive && (
+          <div className="admin-filter admin-filter--clear">
+            <span className="admin-filter__spacer" aria-hidden="true">
+              &nbsp;
+            </span>
+            <button
+              type="button"
+              className="admin-btn admin-btn--ghost admin-btn--flush"
+              onClick={clearFilters}
+            >
+              Clear filters
+            </button>
+          </div>
+        )}
       </div>
 
       <div className="admin-table-wrap">
         <table className="admin-table">
           <thead>
             <tr>
-              <th>Name</th>
-              <th>Side</th>
-              <th>RSVP</th>
-              <th>Wedding</th>
-              <th>Reception</th>
-              <th>Phone</th>
-              <th>Message</th>
-              <th>Time</th>
+              <th scope="col" aria-sort={ariaSortFor("full_name")}>
+                {sortLabel("full_name", "Name")}
+              </th>
+              <th scope="col" aria-sort={ariaSortFor("side")}>
+                {sortLabel("side", "Side")}
+              </th>
+              <th scope="col" aria-sort={ariaSortFor("attendance")}>
+                {sortLabel("attendance", "RSVP")}
+              </th>
+              <th scope="col" aria-sort={ariaSortFor("attend_wedding")}>
+                {sortLabel("attend_wedding", "Wedding")}
+              </th>
+              <th scope="col" aria-sort={ariaSortFor("attend_reception")}>
+                {sortLabel("attend_reception", "Reception")}
+              </th>
+              <th scope="col" aria-sort={ariaSortFor("phone")}>
+                {sortLabel("phone", "Phone")}
+              </th>
+              <th scope="col" aria-sort={ariaSortFor("message")}>
+                {sortLabel("message", "Message")}
+              </th>
+              <th scope="col" aria-sort={ariaSortFor("created_at")}>
+                {sortLabel("created_at", "Time")}
+              </th>
+              <th scope="col" className="admin-th-actions">
+                <span className="admin-th-static">Actions</span>
+              </th>
             </tr>
           </thead>
           <tbody>
             {filtered.length === 0 ? (
               <tr>
-                <td colSpan={8} className="admin-empty">
-                  {loading ? "Loading…" : "No responses match."}
+                <td colSpan={9} className="admin-empty">
+                  {loading
+                    ? "Loading…"
+                    : filtersActive
+                      ? "No responses match your filters."
+                      : "No responses yet."}
                 </td>
               </tr>
             ) : (
-              filtered.map((row) => (
-                <tr key={row.id}>
-                  <td>{row.full_name}</td>
-                  <td className="admin-cap">{row.side || "—"}</td>
-                  <td>{labelYesNo(row.attendance)}</td>
-                  <td>{labelYesNo(row.attend_wedding)}</td>
-                  <td>{labelYesNo(row.attend_reception)}</td>
-                  <td>{row.phone || "—"}</td>
-                  <td className="admin-msg">{row.message || "—"}</td>
-                  <td className="admin-time">{formatTime(row.created_at)}</td>
-                </tr>
-              ))
+              filtered.map((row) => {
+                const phoneLink = telHref(row.phone);
+                return (
+                  <tr key={row.id}>
+                    <td className="admin-name">{row.full_name}</td>
+                    <td>{labelSide(row.side)}</td>
+                    <td>
+                      <span
+                        className={`admin-pill admin-pill--${
+                          row.attendance === "yes"
+                            ? "yes"
+                            : row.attendance === "no"
+                              ? "no"
+                              : "muted"
+                        }`}
+                      >
+                        {labelYesNo(row.attendance)}
+                      </span>
+                    </td>
+                    <td>{labelYesNo(row.attend_wedding)}</td>
+                    <td>{labelYesNo(row.attend_reception)}</td>
+                    <td className="admin-phone">
+                      {phoneLink ? (
+                        <a className="admin-tel" href={phoneLink}>
+                          {row.phone}
+                        </a>
+                      ) : (
+                        <span className="admin-muted">—</span>
+                      )}
+                    </td>
+                    <td>
+                      <MessageCell
+                        message={row.message}
+                        expanded={Boolean(expandedMsgs[row.id])}
+                        onToggle={() =>
+                          setExpandedMsgs((prev) => ({
+                            ...prev,
+                            [row.id]: !prev[row.id],
+                          }))
+                        }
+                      />
+                    </td>
+                    <td className="admin-time">{formatTime(row.created_at)}</td>
+                    <td className="admin-row-actions">
+                      {row.phone && (
+                        <button
+                          type="button"
+                          className="admin-link-btn"
+                          onClick={() =>
+                            void showCopied("Phone", row.phone || "")
+                          }
+                        >
+                          Copy phone
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        className="admin-link-btn"
+                        onClick={() =>
+                          void showCopied("Guest details", rowToClipboard(row))
+                        }
+                      >
+                        Copy row
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })
             )}
           </tbody>
         </table>
       </div>
+
+      {toast && (
+        <div className="admin-toast" role="status">
+          {toast}
+        </div>
+      )}
     </main>
   );
 }
