@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useGuestPrefs } from "@/components/GuestPrefsContext";
 import { burstPetals } from "@/lib/petalBurst";
-import { submitRsvp, type YesNo } from "@/lib/rsvpApi";
+import { submitRsvp, guestRsvpErrorMessage, type YesNo } from "@/lib/rsvpApi";
 
 type YesNoNull = YesNo | null;
 
@@ -58,9 +58,7 @@ export default function RsvpSection() {
       setIsSubmitted(true);
       burstPetals("full");
     } catch (err) {
-      const msg =
-        err instanceof Error ? err.message : "Something went wrong. Please try again.";
-      setError(msg);
+      setError(guestRsvpErrorMessage(err));
     } finally {
       setIsSubmitting(false);
     }

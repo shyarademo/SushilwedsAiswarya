@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
 import {
+  ADMIN_AUTH_FAIL,
+  adminErrorMessage,
   downloadRsvpsCsv,
   fetchRsvps,
   type RsvpRow,
@@ -101,10 +103,9 @@ export default function AdminPage() {
         setRows(data.rows);
       } catch (err) {
         if (cancelled) return;
-        const msg =
-          err instanceof Error ? err.message : "Could not load responses.";
+        const msg = adminErrorMessage(err, "load");
         setError(msg);
-        if (/unauthor/i.test(msg) || /401/.test(msg)) {
+        if (msg === ADMIN_AUTH_FAIL) {
           clearAuth();
         }
       } finally {
@@ -125,11 +126,7 @@ export default function AdminPage() {
       await fetchRsvps(password);
       writeSessionPassword(password);
     } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Incorrect password or network error."
-      );
+      setError(adminErrorMessage(err, "login"));
       setLoading(false);
     }
   };
@@ -144,9 +141,7 @@ export default function AdminPage() {
     try {
       await downloadRsvpsCsv(storedPassword);
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Could not download CSV."
-      );
+      setError(adminErrorMessage(err, "csv"));
     }
   };
 
