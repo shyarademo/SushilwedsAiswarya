@@ -74,14 +74,6 @@ export default function CountdownTimer() {
           ))}
         </div>
       )}
-
-      <p className="countdown__when">
-        The Muhurtham
-        <span className="countdown__when-dot" aria-hidden="true"></span>
-        13 September 2026
-        <span className="countdown__when-dot" aria-hidden="true"></span>
-        7:15 AM
-      </p>
     </div>
   );
 }

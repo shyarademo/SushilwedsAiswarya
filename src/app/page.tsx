@@ -249,7 +249,7 @@ export default function HomePage() {
           <div className="footer-compliments">
             <p className="footer-compliments__label">Best Compliments</p>
             <div className="footer-names-wrap">
-              <p className="footer-names">Soumil and Arvind</p>
+              <p className="footer-names">Arvind and Soumil</p>
             </div>
           </div>
 
