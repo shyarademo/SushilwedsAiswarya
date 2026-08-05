@@ -994,7 +994,7 @@ body {
   padding: 26px 18px 28px;
   border-radius: 12px;
   border: 1px solid rgba(212, 168, 67, 0.6);
-  background: rgba(253, 250, 243, 0.56);
+  background: rgba(253, 250, 243, 0.68);
   -webkit-backdrop-filter: blur(9px) saturate(1.15);
   backdrop-filter: blur(9px) saturate(1.15);
   box-shadow:
@@ -1016,18 +1016,19 @@ body {
   margin: -0.12em 0 16px;
 }
 
-/* Date · Time row */
+/* Date · Time row — deepened for contrast on frosted glass */
 .ev-card__datetime {
   font-family: var(--font-caps), serif;
   font-size: 0.7rem;
   letter-spacing: 3px;
   text-transform: uppercase;
-  color: var(--gold-dark);
+  color: #4a3210;
+  text-shadow: 0 1px 0 rgba(255, 252, 246, 0.65);
   margin-bottom: 10px;
 }
 
 .ev-card__sep {
-  color: rgba(160, 123, 46, 0.45);
+  color: rgba(74, 50, 16, 0.55);
   letter-spacing: 0;
   margin: 0 4px;
 }
@@ -1582,12 +1583,226 @@ body {
   box-shadow: 0 4px 16px rgba(122, 31, 46, 0.3);
 }
 
-/* ── Wedding / Reception attendance questions (shown on accept) ── */
-.rsvp-questions {
+/* ── Multi-select celebration chips (shown on accept) ── */
+.rsvp-events {
+  margin: 0;
+  padding: 18px 16px 16px;
+  border: 1px solid rgba(212, 168, 67, 0.32);
+  border-radius: 14px;
+  background:
+    linear-gradient(165deg, rgba(255, 252, 246, 0.92), rgba(241, 231, 214, 0.55));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  animation: questionsIn 0.45s ease both;
+  min-width: 0;
+}
+
+.rsvp-events__legend {
+  padding: 0;
+  font-family: var(--font-serif), serif;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--maroon);
+  text-align: center;
+}
+
+.rsvp-events__hint {
+  margin: 4px 0 14px;
+  font-family: var(--font-caps), serif;
+  font-size: 0.58rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #6b5220;
+  text-align: center;
+}
+
+.rsvp-events__list {
   display: flex;
   flex-direction: column;
+  gap: 10px;
+}
+
+.rsvp-event {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: start;
   gap: 12px;
+  padding: 14px 14px 14px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(122, 31, 46, 0.14);
+  background: rgba(255, 253, 248, 0.88);
+  cursor: pointer;
+  text-align: left;
+  transition:
+    border-color 0.25s ease,
+    background 0.25s ease,
+    box-shadow 0.25s ease,
+    transform 0.25s ease;
+}
+
+.rsvp-event:hover {
+  border-color: rgba(212, 168, 67, 0.55);
+  box-shadow: 0 6px 18px rgba(45, 26, 16, 0.06);
+}
+
+.rsvp-event--on {
+  border-color: rgba(122, 31, 46, 0.45);
+  background:
+    linear-gradient(135deg, rgba(253, 246, 232, 0.95), rgba(241, 220, 186, 0.55));
+  box-shadow:
+    0 0 0 1px rgba(212, 168, 67, 0.35),
+    0 8px 22px rgba(122, 31, 46, 0.1);
+}
+
+.rsvp-event__input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  pointer-events: none;
+}
+
+.rsvp-event__check {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  margin-top: 2px;
+  border-radius: 6px;
+  border: 1.5px solid rgba(122, 31, 46, 0.35);
+  background: rgba(255, 252, 246, 0.95);
+  color: transparent;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.rsvp-event--on .rsvp-event__check {
+  background: var(--maroon);
+  border-color: var(--maroon);
+  color: #fdf6e8;
+}
+
+.rsvp-event__input:focus-visible + .rsvp-event__check {
+  outline: 2px solid rgba(212, 168, 67, 0.75);
+  outline-offset: 2px;
+}
+
+.rsvp-event__copy {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.rsvp-event__title {
+  font-family: var(--font-brush), cursive;
+  font-size: clamp(1.35rem, 5vw, 1.65rem);
+  line-height: 1.15;
+  color: var(--maroon);
+}
+
+.rsvp-event__meta {
+  font-family: var(--font-caps), serif;
+  font-size: 0.58rem;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: #4a3210;
+  line-height: 1.45;
+}
+
+/* ── Guest count stepper + number input ── */
+.rsvp-guests {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px 18px;
+  padding: 16px 16px;
+  border-radius: 14px;
+  border: 1px solid rgba(212, 168, 67, 0.32);
+  background:
+    linear-gradient(165deg, rgba(255, 252, 246, 0.92), rgba(241, 231, 214, 0.55));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
   animation: questionsIn 0.45s ease both;
+}
+
+.rsvp-guests__copy {
+  text-align: left;
+  min-width: 0;
+}
+
+.rsvp-guests__title {
+  margin: 0;
+  font-family: var(--font-serif), serif;
+  font-size: 1.02rem;
+  font-weight: 600;
+  color: var(--maroon);
+}
+
+.rsvp-guests__hint {
+  margin: 3px 0 0;
+  font-family: var(--font-caps), serif;
+  font-size: 0.55rem;
+  letter-spacing: 1.8px;
+  text-transform: uppercase;
+  color: #6b5220;
+}
+
+.rsvp-guests__controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.rsvp-guests__btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid rgba(122, 31, 46, 0.28);
+  background: rgba(255, 252, 246, 0.95);
+  color: var(--maroon);
+  font-family: var(--font-serif), serif;
+  font-size: 1.35rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+
+.rsvp-guests__btn:hover:not(:disabled) {
+  border-color: var(--maroon);
+  background: rgba(122, 31, 46, 0.06);
+}
+
+.rsvp-guests__btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.rsvp-guests__input {
+  width: 64px;
+  height: 40px;
+  border-radius: 10px;
+  border: 1px solid rgba(212, 168, 67, 0.45);
+  background: #fffef9;
+  color: var(--maroon);
+  font-family: var(--font-caps), serif;
+  font-size: 1.05rem;
+  letter-spacing: 1px;
+  text-align: center;
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+.rsvp-guests__input::-webkit-outer-spin-button,
+.rsvp-guests__input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.rsvp-guests__input:focus {
+  outline: 2px solid rgba(212, 168, 67, 0.55);
+  outline-offset: 1px;
 }
 
 @keyframes questionsIn {
@@ -1599,65 +1814,6 @@ body {
     opacity: 1;
     transform: translateY(0);
   }
-}
-
-.rsvp-question {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px 14px;
-  padding: 12px 14px;
-  border: 1px solid rgba(212, 168, 67, 0.28);
-  border-radius: 10px;
-  background: var(--beige);
-}
-
-.rsvp-question__label {
-  font-family: var(--font-serif), serif;
-  font-style: italic;
-  font-size: 0.88rem;
-  color: var(--text-soft);
-  text-align: left;
-}
-
-.rsvp-question__pills {
-  display: flex;
-  gap: 8px;
-  margin-left: auto;
-}
-
-.rsvp-pill {
-  padding: 7px 18px;
-  border: 1px solid rgba(212, 168, 67, 0.45);
-  background: transparent;
-  color: var(--gold-dark);
-  border-radius: 30px;
-  cursor: pointer;
-  font-family: var(--font-caps), serif;
-  font-size: 0.6rem;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  transition: all 0.25s ease;
-}
-
-.rsvp-pill:hover {
-  border-color: var(--gold);
-  background: rgba(212, 168, 67, 0.08);
-}
-
-.rsvp-pill--yes {
-  background: var(--gold);
-  border-color: var(--gold);
-  color: white;
-  box-shadow: 0 3px 12px rgba(212, 168, 67, 0.4);
-}
-
-.rsvp-pill--no {
-  background: var(--maroon);
-  border-color: var(--maroon);
-  color: white;
-  box-shadow: 0 3px 12px rgba(122, 31, 46, 0.3);
 }
 
 .input-group {
@@ -2597,7 +2753,7 @@ body {
   max-width: 1180px;
   margin: 0 auto 18px;
   display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 10px;
 }
 
@@ -2696,14 +2852,16 @@ body {
   white-space: nowrap;
 }
 
-.admin-table th:nth-child(1) { width: 15%; }
-.admin-table th:nth-child(2) { width: 9%; }
-.admin-table th:nth-child(3) { width: 10%; }
-.admin-table th:nth-child(4) { width: 9%; }
-.admin-table th:nth-child(5) { width: 10%; }
-.admin-table th:nth-child(6) { width: 14%; }
-.admin-table th:nth-child(7) { width: 22%; }
+.admin-table th:nth-child(1) { width: 12%; }
+.admin-table th:nth-child(2) { width: 7%; }
+.admin-table th:nth-child(3) { width: 7%; }
+.admin-table th:nth-child(4) { width: 7%; }
+.admin-table th:nth-child(5) { width: 7%; }
+.admin-table th:nth-child(6) { width: 7%; }
+.admin-table th:nth-child(7) { width: 8%; }
 .admin-table th:nth-child(8) { width: 11%; }
+.admin-table th:nth-child(9) { width: 18%; }
+.admin-table th:nth-child(10) { width: 9%; }
 
 .admin-table tbody tr:last-child td {
   border-bottom: none;
@@ -3028,7 +3186,7 @@ body {
   .portrait-scratch--revealed .portrait-img--photo,
   .countdown__value,
   .side-result,
-  .rsvp-questions,
+  .rsvp-events,
   .atc__menu,
   .music-toggle--playing .music-toggle__ring {
     animation: none;
@@ -3040,7 +3198,7 @@ body {
   .toggle-btn,
   .rsvp-submit,
   .side-card,
-  .rsvp-pill,
+  .rsvp-event,
   .atc__option {
     transition: none;
   }

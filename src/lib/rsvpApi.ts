@@ -15,8 +15,13 @@ export type RsvpPayload = {
   full_name: string;
   phone?: string;
   attendance: YesNo;
+  /** Party size including the person submitting (when attending) */
+  guest_count?: number | null;
   attend_wedding?: YesNo | null;
+  /** Kochi reception (13 Sept) */
   attend_reception?: YesNo | null;
+  /** Bengaluru reception (19 Sept) */
+  attend_reception_bengaluru?: YesNo | null;
   side: GuestSide;
   message?: string;
 };
@@ -27,8 +32,10 @@ export type RsvpRow = {
   full_name: string;
   phone: string | null;
   attendance: string;
+  guest_count?: number | null;
   attend_wedding: string | null;
   attend_reception: string | null;
+  attend_reception_bengaluru?: string | null;
   side: string | null;
   message: string | null;
 };

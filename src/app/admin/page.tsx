@@ -18,8 +18,10 @@ type SortKey =
   | "full_name"
   | "side"
   | "attendance"
+  | "guest_count"
   | "attend_wedding"
   | "attend_reception"
+  | "attend_reception_bengaluru"
   | "phone"
   | "message"
   | "created_at";
@@ -66,7 +68,7 @@ function formatTime(iso: string): string {
   }
 }
 
-function labelYesNo(value: string | null): string {
+function labelYesNo(value: string | null | undefined): string {
   if (!value) return "—";
   if (value === "yes") return "Yes";
   if (value === "no") return "No";
@@ -107,6 +109,10 @@ function whatsappHref(phone: string | null): string | null {
 }
 
 function sortValue(row: RsvpRow, key: SortKey): string {
+  if (key === "guest_count") {
+    const n = Number(row.guest_count ?? 0);
+    return String(Number.isFinite(n) ? n : 0).padStart(4, "0");
+  }
   const raw = row[key];
   return (raw ?? "").toString().toLowerCase();
 }
@@ -307,7 +313,17 @@ export default function AdminPage() {
   const brideCount = rows.filter((r) => r.side === "bride").length;
   const groomCount = rows.filter((r) => r.side === "groom").length;
   const weddingYes = rows.filter((r) => r.attend_wedding === "yes").length;
-  const receptionYes = rows.filter((r) => r.attend_reception === "yes").length;
+  const receptionKochiYes = rows.filter(
+    (r) => r.attend_reception === "yes"
+  ).length;
+  const receptionBengaluruYes = rows.filter(
+    (r) => r.attend_reception_bengaluru === "yes"
+  ).length;
+  const guestTotal = rows.reduce((sum, r) => {
+    if (r.attendance !== "yes") return sum;
+    const n = Number(r.guest_count);
+    return sum + (Number.isFinite(n) ? n : 0);
+  }, 0);
 
   const sortLabel = (key: SortKey, label: string) => {
     const active = sortKey === key;
@@ -409,6 +425,10 @@ export default function AdminPage() {
           <span className="admin-stat__label">Attending</span>
         </div>
         <div className="admin-stat">
+          <span className="admin-stat__value">{guestTotal}</span>
+          <span className="admin-stat__label">Total guests</span>
+        </div>
+        <div className="admin-stat">
           <span className="admin-stat__value">{noCount}</span>
           <span className="admin-stat__label">Declined</span>
         </div>
@@ -425,8 +445,12 @@ export default function AdminPage() {
           <span className="admin-stat__label">Wedding</span>
         </div>
         <div className="admin-stat">
-          <span className="admin-stat__value">{receptionYes}</span>
-          <span className="admin-stat__label">Reception</span>
+          <span className="admin-stat__value">{receptionKochiYes}</span>
+          <span className="admin-stat__label">Kochi reception</span>
+        </div>
+        <div className="admin-stat">
+          <span className="admin-stat__value">{receptionBengaluruYes}</span>
+          <span className="admin-stat__label">Bengaluru reception</span>
         </div>
       </div>
 
@@ -502,11 +526,20 @@ export default function AdminPage() {
               <th scope="col" aria-sort={ariaSortFor("attendance")}>
                 {sortLabel("attendance", "RSVP")}
               </th>
+              <th scope="col" aria-sort={ariaSortFor("guest_count")}>
+                {sortLabel("guest_count", "Guests")}
+              </th>
               <th scope="col" aria-sort={ariaSortFor("attend_wedding")}>
                 {sortLabel("attend_wedding", "Wedding")}
               </th>
               <th scope="col" aria-sort={ariaSortFor("attend_reception")}>
-                {sortLabel("attend_reception", "Reception")}
+                {sortLabel("attend_reception", "Kochi")}
+              </th>
+              <th
+                scope="col"
+                aria-sort={ariaSortFor("attend_reception_bengaluru")}
+              >
+                {sortLabel("attend_reception_bengaluru", "Bengaluru")}
               </th>
               <th scope="col" aria-sort={ariaSortFor("phone")}>
                 {sortLabel("phone", "Phone")}
@@ -522,7 +555,7 @@ export default function AdminPage() {
           <tbody>
             {filtered.length === 0 ? (
               <tr>
-                <td colSpan={8} className="admin-empty">
+                <td colSpan={10} className="admin-empty">
                   {loading
                     ? "Loading…"
                     : filtersActive
@@ -550,8 +583,10 @@ export default function AdminPage() {
                         {labelYesNo(row.attendance)}
                       </span>
                     </td>
+                    <td>{row.guest_count ?? "—"}</td>
                     <td>{labelYesNo(row.attend_wedding)}</td>
                     <td>{labelYesNo(row.attend_reception)}</td>
+                    <td>{labelYesNo(row.attend_reception_bengaluru)}</td>
                     <td className="admin-phone">
                       {canContact && row.phone ? (
                         <button

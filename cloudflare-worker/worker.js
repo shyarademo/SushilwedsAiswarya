@@ -199,9 +199,31 @@ async function handlePost(request, env, cors, ctx) {
     body.attend_reception == null || body.attend_reception === ""
       ? null
       : String(body.attend_reception).trim();
+  const attend_reception_bengaluru =
+    body.attend_reception_bengaluru == null ||
+    body.attend_reception_bengaluru === ""
+      ? null
+      : String(body.attend_reception_bengaluru).trim();
+
+  let guest_count = null;
+  if (body.guest_count != null && body.guest_count !== "") {
+    const n = Number(body.guest_count);
+    if (!Number.isFinite(n) || n < 1 || n > 40 || !Number.isInteger(n)) {
+      return json(
+        { ok: false, error: "Guest count must be a whole number from 1 to 40" },
+        400,
+        cors
+      );
+    }
+    guest_count = n;
+  }
 
   if (!full_name || !attendance || !side) {
     return json({ ok: false, error: "Missing required fields" }, 400, cors);
+  }
+
+  if (attendance === "yes" && guest_count == null) {
+    return json({ ok: false, error: "Guest count is required" }, 400, cors);
   }
 
   if (full_name.length > MAX_NAME) {
@@ -215,17 +237,21 @@ async function handlePost(request, env, cors, ctx) {
   }
 
   // Duplicates are intentionally allowed — always INSERT.
+  // attend_reception = Kochi (13 Sept); attend_reception_bengaluru = Bengaluru (19 Sept)
   const result = await env.DB.prepare(
     `INSERT INTO rsvps
-      (full_name, phone, attendance, attend_wedding, attend_reception, side, message)
-     VALUES (?, ?, ?, ?, ?, ?, ?)`
+      (full_name, phone, attendance, guest_count, attend_wedding, attend_reception,
+       attend_reception_bengaluru, side, message)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
   )
     .bind(
       full_name,
       phone || null,
       attendance,
+      guest_count,
       attend_wedding,
       attend_reception,
+      attend_reception_bengaluru,
       side,
       message
     )
@@ -261,8 +287,9 @@ async function handleGet(request, env, cors, url, ctx) {
 
   const asCsv = url.searchParams.get("format") === "csv";
   const { results } = await env.DB.prepare(
-    `SELECT id, created_at, full_name, phone, attendance,
-            attend_wedding, attend_reception, side, message
+    `SELECT id, created_at, full_name, phone, attendance, guest_count,
+            attend_wedding, attend_reception, attend_reception_bengaluru,
+            side, message
      FROM rsvps
      ORDER BY created_at DESC, id DESC`
   ).all();
@@ -276,8 +303,10 @@ async function handleGet(request, env, cors, url, ctx) {
       "full_name",
       "phone",
       "attendance",
+      "guest_count",
       "attend_wedding",
       "attend_reception",
+      "attend_reception_bengaluru",
       "side",
       "message",
     ];
