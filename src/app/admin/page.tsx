@@ -14,6 +14,7 @@ const MESSAGE_COLLAPSE_CHARS = 120;
 
 type AttendanceFilter = "all" | "yes" | "no";
 type SideFilter = "all" | "bride" | "groom";
+type EventFilter = "all" | "wedding" | "kochi" | "bengaluru";
 type SortKey =
   | "full_name"
   | "side"
@@ -57,14 +58,21 @@ function writeSessionPassword(password: string | null) {
   sessionListeners.forEach((listener) => listener());
 }
 
-function formatTime(iso: string): string {
+/** D1 often returns "YYYY-MM-DD HH:MM:SS" without timezone — normalize for Date(). */
+function formatTime(raw: string): string {
   try {
-    return new Date(iso).toLocaleString(undefined, {
+    let value = raw.trim();
+    if (!value) return "—";
+    if (!value.includes("T")) value = value.replace(" ", "T");
+    if (!/[zZ]|[+-]\d{2}:?\d{2}$/.test(value)) value = `${value}Z`;
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return raw;
+    return date.toLocaleString(undefined, {
       dateStyle: "medium",
       timeStyle: "short",
     });
   } catch {
-    return iso;
+    return raw;
   }
 }
 
@@ -82,6 +90,14 @@ function labelSide(value: string | null): string {
   return value;
 }
 
+function displayGuestCount(row: RsvpRow): string {
+  if (row.attendance !== "yes") return "—";
+  if (row.guest_count == null || row.guest_count === undefined) return "—";
+  const n = Number(row.guest_count);
+  if (!Number.isFinite(n)) return "—";
+  return String(n);
+}
+
 function normalizePhone(phone: string | null): string {
   if (!phone) return "";
   return phone.replace(/[^\d+]/g, "");
@@ -92,6 +108,10 @@ function whatsappDigits(phone: string | null): string | null {
   if (!phone) return null;
   let digits = phone.replace(/\D/g, "");
   if (!digits) return null;
+  // Strip a single national trunk 0 (e.g. 09876… → 9876…)
+  if (digits.length === 11 && digits.startsWith("0")) {
+    digits = digits.slice(1);
+  }
   if (digits.length === 10) digits = `91${digits}`;
   return digits;
 }
@@ -110,11 +130,20 @@ function whatsappHref(phone: string | null): string | null {
 
 function sortValue(row: RsvpRow, key: SortKey): string {
   if (key === "guest_count") {
+    if (row.attendance !== "yes") return "0000";
     const n = Number(row.guest_count ?? 0);
     return String(Number.isFinite(n) ? n : 0).padStart(4, "0");
   }
   const raw = row[key];
   return (raw ?? "").toString().toLowerCase();
+}
+
+function matchesEvent(row: RsvpRow, eventFilter: EventFilter): boolean {
+  if (eventFilter === "all") return true;
+  if (eventFilter === "wedding") return row.attend_wedding === "yes";
+  if (eventFilter === "kochi") return row.attend_reception === "yes";
+  if (eventFilter === "bengaluru") return row.attend_reception_bengaluru === "yes";
+  return true;
 }
 
 function MessageCell({
@@ -135,7 +164,9 @@ function MessageCell({
 
   return (
     <div className={`admin-msg${expanded ? " admin-msg--open" : ""}`}>
-      <p className="admin-msg__text">{normalized}</p>
+      <p className="admin-msg__text" title={normalized}>
+        {normalized}
+      </p>
       {needsCollapse && (
         <button
           type="button"
@@ -166,6 +197,7 @@ export default function AdminPage() {
   const [attendanceFilter, setAttendanceFilter] =
     useState<AttendanceFilter>("all");
   const [sideFilter, setSideFilter] = useState<SideFilter>("all");
+  const [eventFilter, setEventFilter] = useState<EventFilter>("all");
   const [search, setSearch] = useState("");
   const [loadTick, setLoadTick] = useState(0);
   const [sortKey, setSortKey] = useState<SortKey>("created_at");
@@ -195,6 +227,20 @@ export default function AdminPage() {
     const id = window.setTimeout(() => setToast(null), 2200);
     return () => window.clearTimeout(id);
   }, [toast]);
+
+  useEffect(() => {
+    if (!phoneSheet) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setPhoneSheet(null);
+    };
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [phoneSheet]);
 
   useEffect(() => {
     if (!storedPassword) return;
@@ -270,12 +316,14 @@ export default function AdminPage() {
     setSearch("");
     setAttendanceFilter("all");
     setSideFilter("all");
+    setEventFilter("all");
   };
 
   const filtersActive =
     search.trim() !== "" ||
     attendanceFilter !== "all" ||
-    sideFilter !== "all";
+    sideFilter !== "all" ||
+    eventFilter !== "all";
 
   const q = search.trim().toLowerCase();
   const filtered = rows
@@ -286,12 +334,19 @@ export default function AdminPage() {
       if (sideFilter !== "all" && row.side !== sideFilter) {
         return false;
       }
+      if (!matchesEvent(row, eventFilter)) return false;
       if (q) {
+        const events = [
+          row.attend_wedding === "yes" ? "wedding" : "",
+          row.attend_reception === "yes" ? "kochi reception" : "",
+          row.attend_reception_bengaluru === "yes" ? "bengaluru reception" : "",
+        ];
         const hay = [
           row.full_name,
           row.phone ?? "",
           row.message ?? "",
           row.side ?? "",
+          ...events,
         ]
           .join(" ")
           .toLowerCase();
@@ -308,18 +363,21 @@ export default function AdminPage() {
       return b.id - a.id;
     });
 
-  const yesCount = rows.filter((r) => r.attendance === "yes").length;
-  const noCount = rows.filter((r) => r.attendance === "no").length;
-  const brideCount = rows.filter((r) => r.side === "bride").length;
-  const groomCount = rows.filter((r) => r.side === "groom").length;
-  const weddingYes = rows.filter((r) => r.attend_wedding === "yes").length;
-  const receptionKochiYes = rows.filter(
+  const statsSource = filtersActive ? filtered : rows;
+  const yesCount = statsSource.filter((r) => r.attendance === "yes").length;
+  const noCount = statsSource.filter((r) => r.attendance === "no").length;
+  const brideCount = statsSource.filter((r) => r.side === "bride").length;
+  const groomCount = statsSource.filter((r) => r.side === "groom").length;
+  const weddingYes = statsSource.filter(
+    (r) => r.attend_wedding === "yes"
+  ).length;
+  const receptionKochiYes = statsSource.filter(
     (r) => r.attend_reception === "yes"
   ).length;
-  const receptionBengaluruYes = rows.filter(
+  const receptionBengaluruYes = statsSource.filter(
     (r) => r.attend_reception_bengaluru === "yes"
   ).length;
-  const guestTotal = rows.reduce((sum, r) => {
+  const guestTotal = statsSource.reduce((sum, r) => {
     if (r.attendance !== "yes") return sum;
     const n = Number(r.guest_count);
     return sum + (Number.isFinite(n) ? n : 0);
@@ -391,6 +449,7 @@ export default function AdminPage() {
             {filtered.length !== rows.length
               ? ` · showing ${filtered.length}`
               : ""}
+            {filtersActive ? " · stats for current filters" : ""}
           </p>
         </div>
         <div className="admin-actions">
@@ -466,7 +525,7 @@ export default function AdminPage() {
           <input
             type="search"
             className="admin-input"
-            placeholder="Name, phone, or message…"
+            placeholder="Name, phone, message, event…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
@@ -495,6 +554,19 @@ export default function AdminPage() {
             <option value="all">All</option>
             <option value="bride">Bride</option>
             <option value="groom">Groom</option>
+          </select>
+        </label>
+        <label className="admin-filter">
+          <span>Event</span>
+          <select
+            className="admin-input"
+            value={eventFilter}
+            onChange={(e) => setEventFilter(e.target.value as EventFilter)}
+          >
+            <option value="all">All</option>
+            <option value="wedding">Wedding</option>
+            <option value="kochi">Kochi reception</option>
+            <option value="bengaluru">Bengaluru reception</option>
           </select>
         </label>
         {filtersActive && (
@@ -583,7 +655,7 @@ export default function AdminPage() {
                         {labelYesNo(row.attendance)}
                       </span>
                     </td>
-                    <td>{row.guest_count ?? "—"}</td>
+                    <td>{displayGuestCount(row)}</td>
                     <td>{labelYesNo(row.attend_wedding)}</td>
                     <td>{labelYesNo(row.attend_reception)}</td>
                     <td>{labelYesNo(row.attend_reception_bengaluru)}</td>

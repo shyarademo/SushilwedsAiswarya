@@ -2816,7 +2816,7 @@ body {
   max-width: 1180px;
   margin: 0 auto 16px;
   display: grid;
-  grid-template-columns: minmax(0, 2.2fr) repeat(2, minmax(0, 1fr)) auto;
+  grid-template-columns: minmax(0, 1.6fr) repeat(3, minmax(0, 1fr)) auto;
   gap: 12px;
   align-items: end;
 }
