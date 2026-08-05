@@ -24,7 +24,6 @@ export default function Gate({ onExited, onOpenStart }: GateProps) {
     return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   });
   const startedRef = useRef(false);
-  const sealRef = useRef<HTMLButtonElement>(null);
   const doorLeftRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -32,11 +31,6 @@ export default function Gate({ onExited, onOpenStart }: GateProps) {
     const onChange = () => setReduced(mq.matches);
     mq.addEventListener("change", onChange);
     return () => mq.removeEventListener("change", onChange);
-  }, []);
-
-  useEffect(() => {
-    // Focus the seal so keyboard guests can open immediately
-    sealRef.current?.focus({ preventScroll: true });
   }, []);
 
   useEffect(() => {
@@ -108,7 +102,6 @@ export default function Gate({ onExited, onOpenStart }: GateProps) {
 
           <div className="gate__latch">
             <button
-              ref={sealRef}
               type="button"
               className="gate__seal"
               onClick={open}

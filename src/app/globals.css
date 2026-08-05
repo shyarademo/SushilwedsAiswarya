@@ -27,6 +27,17 @@
   padding: 0;
 }
 
+/* Kill default square focus/tap flashes; keep intentional :focus-visible styles */
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+button,
+a,
+summary {
+  -webkit-tap-highlight-color: transparent;
+}
+
 /* ─── Page Background: warm candlelit atmosphere ────────────────── */
 html,
 body {
@@ -2169,8 +2180,19 @@ body {
   border: none;
   background: transparent;
   cursor: pointer;
+  outline: none;
+  box-shadow: none;
   -webkit-tap-highlight-color: transparent;
+  -webkit-appearance: none;
+  appearance: none;
   transform: rotate(-3.5deg);
+}
+
+.gate__seal:focus,
+.gate__seal:focus-visible,
+.gate__seal:active {
+  outline: none;
+  box-shadow: none;
 }
 
 .gate__seal:disabled {
@@ -2210,9 +2232,16 @@ body {
   animation: sealPulse 2.6s ease-in-out infinite;
 }
 
+/* Circular keyboard focus — never a rotated square outline */
 .gate__seal:focus-visible .gate__seal-wax {
-  outline: 2px solid var(--gold-light);
-  outline-offset: 6px;
+  outline: none;
+  box-shadow:
+    0 0 0 2px rgba(253, 246, 232, 0.95),
+    0 0 0 5px rgba(212, 168, 67, 0.9),
+    0 0 0 8px rgba(122, 31, 46, 0.35),
+    0 12px 26px rgba(45, 26, 16, 0.4),
+    inset 0 2px 8px rgba(253, 246, 232, 0.32),
+    inset 0 -8px 16px rgba(45, 10, 16, 0.42);
 }
 
 .gate__monogram {
