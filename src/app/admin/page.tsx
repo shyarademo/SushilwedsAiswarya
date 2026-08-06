@@ -1,10 +1,12 @@
 "use client";
 
 import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
+import DownloadExportModal, {
+  type DownloadFormat,
+} from "@/components/admin/DownloadExportModal";
 import {
   ADMIN_AUTH_FAIL,
   adminErrorMessage,
-  downloadRsvpsCsv,
   fetchRsvps,
   type RsvpRow,
 } from "@/lib/rsvpApi";
@@ -209,6 +211,10 @@ export default function AdminPage() {
     name: string;
     phone: string;
   } | null>(null);
+  const [downloadOpen, setDownloadOpen] = useState(false);
+  const [exportBusy, setExportBusy] = useState(false);
+  const [exportBusyFormat, setExportBusyFormat] =
+    useState<DownloadFormat | null>(null);
 
   const clearAuth = useCallback(() => {
     writeSessionPassword(null);
@@ -216,6 +222,13 @@ export default function AdminPage() {
     setPassword("");
     setError(null);
     setPhoneSheet(null);
+    setDownloadOpen(false);
+    setExportBusy(false);
+    setExportBusyFormat(null);
+  }, []);
+
+  const closeDownloadModal = useCallback(() => {
+    setDownloadOpen(false);
   }, []);
 
   const handleLogout = () => {
@@ -286,14 +299,38 @@ export default function AdminPage() {
     }
   };
 
-  const handleCsv = async () => {
-    if (!storedPassword) return;
+  const openDownloadModal = () => {
     setError(null);
+    if (rows.length === 0) {
+      setToast("No responses to download");
+      return;
+    }
+    setDownloadOpen(true);
+  };
+
+  const handleExport = async (format: DownloadFormat) => {
+    if (exportBusy || rows.length === 0) return;
+    setError(null);
+    setExportBusy(true);
+    setExportBusyFormat(format);
     try {
-      await downloadRsvpsCsv(storedPassword);
-      setToast("CSV download started");
-    } catch (err) {
-      setError(adminErrorMessage(err, "csv"));
+      if (format === "xlsx") {
+        const { exportRsvpsXlsx } = await import("@/lib/export/rsvpXlsx");
+        await exportRsvpsXlsx(rows);
+        setToast("Excel download started");
+      } else {
+        const { exportRsvpsPdf } = await import("@/lib/export/rsvpPdf");
+        await exportRsvpsPdf(rows);
+        setToast("PDF download started");
+      }
+      setDownloadOpen(false);
+    } catch {
+      setError(
+        "We couldn't prepare that download just now. Please try again in a moment."
+      );
+    } finally {
+      setExportBusy(false);
+      setExportBusyFormat(null);
     }
   };
 
@@ -464,9 +501,10 @@ export default function AdminPage() {
           <button
             type="button"
             className="admin-btn"
-            onClick={() => void handleCsv()}
+            onClick={openDownloadModal}
+            disabled={loading}
           >
-            Download CSV
+            Download
           </button>
           <button
             type="button"
@@ -741,6 +779,14 @@ export default function AdminPage() {
           </div>
         </div>
       )}
+
+      <DownloadExportModal
+        open={downloadOpen}
+        busy={exportBusy}
+        busyFormat={exportBusyFormat}
+        onClose={closeDownloadModal}
+        onChoose={(format) => void handleExport(format)}
+      />
 
       {toast && (
         <div className="admin-toast" role="status">

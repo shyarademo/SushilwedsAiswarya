@@ -55,8 +55,6 @@ const ADMIN_LOAD_FAIL =
   "We couldn't load the responses. Please try Refresh in a moment.";
 const ADMIN_NETWORK_FAIL =
   "We couldn't reach the RSVP desk. Please check your connection and try again.";
-const ADMIN_CSV_FAIL =
-  "We couldn't download the CSV just now. Please try again in a moment.";
 
 function isNetworkError(err: unknown): boolean {
   if (err instanceof TypeError) return true;
@@ -101,14 +99,13 @@ export function guestRsvpErrorMessage(err: unknown): string {
 /** Friendly copy for the couple on /admin. */
 export function adminErrorMessage(
   err: unknown,
-  kind: "login" | "load" | "csv" = "load"
+  kind: "login" | "load" = "load"
 ): string {
   if (err instanceof Error) {
     if (
       err.message === ADMIN_AUTH_FAIL ||
       err.message === ADMIN_LOAD_FAIL ||
-      err.message === ADMIN_NETWORK_FAIL ||
-      err.message === ADMIN_CSV_FAIL
+      err.message === ADMIN_NETWORK_FAIL
     ) {
       return err.message;
     }
@@ -119,7 +116,6 @@ export function adminErrorMessage(
     return ADMIN_AUTH_FAIL;
   }
   if (kind === "login") return ADMIN_AUTH_FAIL;
-  if (kind === "csv") return ADMIN_CSV_FAIL;
   return ADMIN_LOAD_FAIL;
 }
 
@@ -178,37 +174,4 @@ export async function fetchRsvps(adminPassword: string): Promise<ListOk> {
     throw new Error(ADMIN_LOAD_FAIL);
   }
   return data;
-}
-
-/** Download CSV as a file; password is sent via header, never in the URL. */
-export async function downloadRsvpsCsv(adminPassword: string): Promise<void> {
-  let res: Response;
-  try {
-    res = await fetch(`${RSVP_API_URL}/rsvp?format=csv`, {
-      method: "GET",
-      headers: {
-        "X-Admin-Password": adminPassword,
-      },
-    });
-  } catch (err) {
-    throw new Error(adminErrorMessage(err, "csv"));
-  }
-
-  if (!res.ok) {
-    const apiMsg = await readApiMessage(res);
-    if (isAuthError(res.status, apiMsg)) {
-      throw new Error(ADMIN_AUTH_FAIL);
-    }
-    throw new Error(ADMIN_CSV_FAIL);
-  }
-
-  const blob = await res.blob();
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "rsvps.csv";
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 10_000);
 }

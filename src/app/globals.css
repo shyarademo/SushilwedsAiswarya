@@ -3105,6 +3105,18 @@ body {
   align-self: center;
 }
 
+.admin-download-sheet {
+  width: min(420px, 100%);
+}
+
+.admin-download-sheet__hint {
+  margin: 0 0 16px;
+  font-family: var(--font-serif), serif;
+  font-size: 0.88rem;
+  line-height: 1.4;
+  color: rgba(58, 42, 34, 0.68);
+}
+
 .admin-toast {
   position: fixed;
   left: 50%;
