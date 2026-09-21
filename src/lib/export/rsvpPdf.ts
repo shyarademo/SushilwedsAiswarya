@@ -1,104 +1,168 @@
 import type { RsvpRow } from "@/lib/rsvpApi";
 import {
-  downloadBlob,
   EXPORT_HEADERS,
-  exportFilename,
   toExportRows,
   type ExportRow,
 } from "@/lib/export/rsvpRows";
 
-/** Build and download a landscape A4 PDF table from RSVP rows (client-side only). */
+/** Escapes HTML characters to prevent rendering glitches. */
+function escapeHtml(unsafe: string | number | boolean | null | undefined): string {
+  if (unsafe == null) return "";
+  return String(unsafe)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+/** Build and trigger browser print of a landscape A4 table from RSVP rows (client-side only). */
 export async function exportRsvpsPdf(rsvps: RsvpRow[]): Promise<void> {
-  const [jspdfMod, autoTableMod] = await Promise.all([
-    import("jspdf"),
-    import("jspdf-autotable"),
-  ]);
-  const jsPDF = jspdfMod.default;
-  const autoTable = autoTableMod.default;
-
   const exportRows = toExportRows(rsvps);
-  const doc = new jsPDF({
-    orientation: "landscape",
-    unit: "mm",
-    format: "a4",
-  });
-
-  const marginX = 10;
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(14);
-  doc.setTextColor(90, 20, 30);
-  // Stick to WinAnsi-safe glyphs for built-in Helvetica (no em dash / middle dot).
-  doc.text("Aiswarya & Sushil - RSVPs", marginX, 14);
-
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(9);
-  doc.setTextColor(80, 70, 60);
   const generated = new Date().toLocaleString(undefined, {
     dateStyle: "medium",
     timeStyle: "short",
   });
-  doc.text(
-    `${exportRows.length} responses | Generated ${generated}`,
-    marginX,
-    20
-  );
 
-  const body = exportRows.map((row) =>
-    EXPORT_HEADERS.map((key) => {
-      const value = row[key as keyof ExportRow];
-      // Helvetica cannot render em dash; normalize common placeholders.
-      return value === "—" ? "-" : value;
-    })
-  );
+  // Create an iframe to hold the print layout.
+  // Using 0x0 size and placing it out of flow instead of `visibility: hidden` 
+  // or `display: none` to ensure it works reliably in Firefox/Safari print dialogs.
+  const iframe = document.createElement("iframe");
+  iframe.style.position = "absolute";
+  iframe.style.width = "0px";
+  iframe.style.height = "0px";
+  iframe.style.border = "none";
+  iframe.style.opacity = "0";
+  iframe.style.pointerEvents = "none";
+  document.body.appendChild(iframe);
 
-  autoTable(doc, {
-    startY: 24,
-    head: [[...EXPORT_HEADERS]],
-    body,
-    styles: {
-      fontSize: 7,
-      cellPadding: 1.5,
-      overflow: "linebreak",
-      valign: "top",
-      textColor: [58, 42, 34],
-    },
-    headStyles: {
-      fillColor: [90, 20, 30],
-      textColor: [255, 254, 249],
-      fontStyle: "bold",
-      fontSize: 7.5,
-    },
-    alternateRowStyles: {
-      fillColor: [252, 248, 240],
-    },
-    columnStyles: {
-      0: { cellWidth: 28 },
-      1: { cellWidth: 28 },
-      2: { cellWidth: 24 },
-      3: { cellWidth: 14 },
-      4: { cellWidth: 12, halign: "center" },
-      5: { cellWidth: 16, halign: "center" },
-      6: { cellWidth: 14, halign: "center" },
-      7: { cellWidth: 18, halign: "center" },
-      8: { cellWidth: "auto" },
-    },
-    margin: { left: marginX, right: marginX, top: 24, bottom: 14 },
-  });
-
-  // Stamp page numbers after layout so "of N" is correct on every page.
-  const pageCount = doc.getNumberOfPages();
-  for (let page = 1; page <= pageCount; page += 1) {
-    doc.setPage(page);
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(8);
-    doc.setTextColor(120, 110, 100);
-    doc.text(
-      `Page ${page} of ${pageCount}`,
-      doc.internal.pageSize.getWidth() / 2,
-      doc.internal.pageSize.getHeight() - 6,
-      { align: "center" }
-    );
+  const doc = iframe.contentWindow?.document;
+  if (!doc) {
+    document.body.removeChild(iframe);
+    return;
   }
 
-  downloadBlob(doc.output("blob"), exportFilename("pdf"));
+  // Generate HTML table for printing
+  const html = `
+    <!DOCTYPE html>
+    <html lang="en">
+      <head>
+        <title>Aiswarya & Sushil - RSVPs</title>
+        <meta charset="utf-8">
+        <style>
+          @page {
+            size: A4 landscape;
+            margin: 10mm;
+          }
+          body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-size: 10px;
+            color: #3a2a22;
+            margin: 0;
+            padding: 0;
+          }
+          h1 {
+            color: #5a141e;
+            font-size: 16px;
+            margin: 0 0 4px 0;
+          }
+          p.meta {
+            color: #50463c;
+            margin: 0 0 16px 0;
+            font-size: 10px;
+          }
+          table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed; /* helps with long messages */
+          }
+          /* Column sizing */
+          th:nth-child(1), td:nth-child(1) { width: 12%; } /* When */
+          th:nth-child(2), td:nth-child(2) { width: 12%; } /* Name */
+          th:nth-child(3), td:nth-child(3) { width: 10%; } /* Phone */
+          th:nth-child(4), td:nth-child(4) { width: 6%; }  /* Side */
+          th:nth-child(5), td:nth-child(5) { width: 5%; text-align: center; }  /* Guests */
+          th:nth-child(6), td:nth-child(6) { width: 6%; text-align: center; }  /* Wedding */
+          th:nth-child(7), td:nth-child(7) { width: 6%; text-align: center; }  /* Kochi */
+          th:nth-child(8), td:nth-child(8) { width: 7%; text-align: center; }  /* Bengaluru */
+          th:nth-child(9), td:nth-child(9) { width: auto; } /* Message */
+
+          th {
+            background-color: #5a141e;
+            color: #fffef9;
+            font-weight: bold;
+            padding: 6px 4px;
+            text-align: left;
+            font-size: 11px;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+          }
+          td {
+            padding: 6px 4px;
+            border-bottom: 1px solid #ddd;
+            vertical-align: top;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+          }
+          tr:nth-child(even) td {
+            background-color: #fcf8f0;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+          }
+        </style>
+      </head>
+      <body>
+        <h1>Aiswarya & Sushil - RSVPs</h1>
+        <p class="meta">${escapeHtml(exportRows.length)} responses | Generated ${escapeHtml(generated)}</p>
+        <table>
+          <thead>
+            <tr>
+              ${EXPORT_HEADERS.map((h) => `<th>${escapeHtml(h)}</th>`).join("")}
+            </tr>
+          </thead>
+          <tbody>
+            ${exportRows
+              .map(
+                (row) => `
+              <tr>
+                ${EXPORT_HEADERS.map((key) => {
+                  let val = row[key as keyof ExportRow];
+                  if (val === "—") val = "-"; // normalize em dash if present
+                  return `<td>${escapeHtml(val)}</td>`;
+                }).join("")}
+              </tr>
+            `
+              )
+              .join("")}
+          </tbody>
+        </table>
+      </body>
+    </html>
+  `;
+
+  doc.open();
+  doc.write(html);
+  doc.close();
+
+  // Print after rendering
+  return new Promise((resolve) => {
+    // Wait briefly for the DOM to settle and styles to apply
+    setTimeout(() => {
+      try {
+        iframe.contentWindow?.focus();
+        iframe.contentWindow?.print();
+      } catch (err) {
+        console.error("Print failed:", err);
+      }
+      
+      // Cleanup iframe. Some browsers block JS during print(),
+      // so this timeout starts *after* the print dialog closes.
+      setTimeout(() => {
+        if (document.body.contains(iframe)) {
+          document.body.removeChild(iframe);
+        }
+        resolve();
+      }, 500);
+    }, 250);
+  });
 }
